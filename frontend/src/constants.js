@@ -131,6 +131,25 @@ export const MOCK_ARTICLES = [
     source: "Wired",
     date: "2026-04-30T12:00:00Z",
     url: "https://wired.com/sovereign-ai-2026"
+  },
+  {
+    id: 8,
+    headline: "Nifty Recovers as Energy Prices Stabilize; May 1 Outlook Positive",
+    summary: "As we enter May 2026, the Indian markets are showing signs of resilience. The Strait of Hormuz blockade has partially lifted, and oil prices have cooled to $118/bbl.",
+    key_insights: [
+      "Market sentiment shifting from Fear to Neutral.",
+      "Tech and AI compute demand remains the primary growth driver.",
+      "Foreign inflows expected to return if VIX stays below 15."
+    ],
+    sentiment: "Positive",
+    confidence: 94,
+    impact: "High",
+    projection: "Expect a gradual recovery toward 24,500 levels in the coming week.",
+    category: "Markets",
+    topics: ["Market Recovery", "Nifty", "May 1"],
+    source: "Financial Express",
+    date: "2026-05-01T08:00:00Z",
+    url: "https://financialexpress.com/may-recovery-2026"
   }
 ];
 
@@ -138,7 +157,9 @@ export const HISTORICAL_TIMELINE_2026 = [
   { date: "Jan 2026", nifty: 26146, btc: 85400, event: "New Year Bullish Peak", sentiment: "Greed" },
   { date: "Feb 2026", nifty: 25200, btc: 72000, event: "Middle East Conflict Begins", sentiment: "Caution" },
   { date: "Mar 2026", nifty: 24800, btc: 66000, event: "Energy Crisis Blockade", sentiment: "Fear" },
-  { date: "Apr 30, 2026", nifty: 23925, btc: 74012, event: "Oil Shock at $125/bbl", sentiment: "Fear" }
+  { date: "Apr 2026", nifty: 24200, btc: 70000, event: "Supply Chain Disruptions", sentiment: "Caution" },
+  { date: "Apr 30, 2026", nifty: 23925, btc: 74012, event: "Oil Shock at $125/bbl", sentiment: "Fear" },
+  { date: "May 1, 2026", nifty: 24150, btc: 75200, event: "Market Stabilization Attempt", sentiment: "Neutral" }
 ];
 
 export const LIVE_INDICES = [

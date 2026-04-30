@@ -46,10 +46,11 @@ const TrajectoryChart = ({ data }) => {
         <polyline fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" points={points} />
       </svg>
       <div className="flex justify-between mt-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
-        <span>JAN</span>
-        <span>FEB</span>
-        <span>MAR</span>
-        <span className="text-blue-600">APR 30 (NOW)</span>
+        {HISTORICAL_TIMELINE_2026.map((point, i) => (
+          <span key={i} className={i === HISTORICAL_TIMELINE_2026.length - 1 ? "text-blue-600 animate-pulse" : ""}>
+            {point.date === "May 1, 2026" ? "MAY 01 (NEW)" : point.date.split(' ')[0].toUpperCase()}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -75,7 +76,7 @@ const MarketTicker = ({ pulse }) => (
       ))}
     </div>
     <div className="absolute right-6 bottom-1 text-[9px] font-black text-blue-400 tracking-widest uppercase opacity-40">
-      Live Pulse: April 30, 2026 | 17:10 IST
+      Live Pulse: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} | {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })} IST
     </div>
   </div>
 );
@@ -104,13 +105,21 @@ export default function App() {
 
   useEffect(() => {
     const lastSync = localStorage.getItem('last_sync_date');
-    const today = "2026-04-30";
+    const today = new Date().toISOString().split('T')[0];
 
     if (lastSync !== today) {
       handleScrape();
       localStorage.setItem('last_sync_date', today);
     }
+
+    // Auto-Pulse: Automate Refresh Daily
+    const refreshInterval = setInterval(() => {
+      console.log("[AUTO-PULSE] Triggering daily automated refresh...");
+      handleSync();
+    }, 1000 * 60 * 60 * 24); // 24 Hours
+
     gsap.from('.reveal-up', { y: 30, stagger: 0.1, duration: 1, ease: 'expo.out' });
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const fetchData = useCallback(async () => {
@@ -147,9 +156,10 @@ export default function App() {
     const steps = [
       { time: "17:10:01", msg: "📡 Initializing Chrome Headless (2026v4)..." },
       { time: "17:10:02", msg: "🕵️ Bypassing Cloudflare Turnstile on NSE-India..." },
-      { time: "17:10:04", msg: "📊 Extracted: Nifty 23,925 (-0.74%)" },
-      { time: "17:10:05", msg: "🛢️ Signal Found: Brent Crude at $121.90/bbl (Iran Blockade)." },
-      { time: "17:10:06", msg: "🤖 Analysis: 'Risk-Off' sentiment dominates; Fear Index at 19.25." },
+      { time: "17:10:03", msg: "🔄 Rotating Proxy: Switch to Node-B (Secure EU Gateway)..." },
+      { time: "17:10:04", msg: "📊 Extracted: Nifty 24,150 (+0.82%)" },
+      { time: "17:10:05", msg: "🛢️ Signal Found: Brent Crude at $121.90/bbl (Stabilizing)." },
+      { time: "17:10:06", msg: "🤖 Analysis: 'Neutral' sentiment emerging; VIX normalized to 14.2." },
       { time: "17:10:07", msg: "✅ State Synced. Dashboard Updated." }
     ];
     let i = 0;
@@ -171,7 +181,8 @@ export default function App() {
   );
 
   // Force Stress Mode for April 30, 2026 Demo
-  const VIX_VALUE = pulse?.insights?.vix || 19.25;
+  // Force Healthy State for May 1, 2026 Demo
+  const VIX_VALUE = pulse?.insights?.vix || 14.2;
   const isMarketStressed = VIX_VALUE > 18;
   const systemStatus = isMarketStressed ? 'Degraded' : (health?.status || 'Active');
 
@@ -215,8 +226,10 @@ export default function App() {
                 onChange={(e) => handleHistorySelect(e.target.value)}
                 className="w-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold py-3 px-4 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                <option value="Today">April 30 (Today)</option>
-                <option value="Jan 2026">Jan 2026</option>
+                <option value="Today">Today ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})</option>
+                {HISTORICAL_TIMELINE_2026.slice(0, -1).reverse().map(h => (
+                  <option key={h.date} value={h.date}>{h.date}</option>
+                ))}
               </select>
               <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none" />
             </div>
@@ -290,9 +303,9 @@ export default function App() {
               <div className="reveal-up mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-between animate-pulse">
                 <div className="flex items-center gap-3 text-rose-600 font-bold text-sm">
                   <AlertTriangle size={18} />
-                  <span>MARKET STRESS ALERT: VIX at 19.25. Geopolitical instability detected.</span>
+                  <span>MARKET STRESS ALERT: VIX at {VIX_VALUE}. Geopolitical instability detected.</span>
                 </div>
-                <div className="text-[10px] font-black text-rose-400 tracking-widest uppercase">High Volatility (19.25)</div>
+                <div className="text-[10px] font-black text-rose-400 tracking-widest uppercase">High Volatility ({VIX_VALUE})</div>
               </div>
             )}
 
@@ -366,7 +379,7 @@ export default function App() {
                     "{SECTOR_ANALYSIS[sector]}"
                   </p>
                   <div className="mt-4 pt-4 border-t border-blue-50 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">April 30 Insight</span>
+                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} Insight</span>
                     <ChevronRight size={14} className="text-blue-300" />
                   </div>
                 </div>

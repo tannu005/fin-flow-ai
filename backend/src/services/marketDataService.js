@@ -25,7 +25,7 @@ const FALLBACK_DATA = {
   },
   sentiment: {
     overall: "Positive",
-    confidence: 89
+    confidence: 92.4
   }
 };
 

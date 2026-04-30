@@ -7,8 +7,23 @@ const FINANCIAL_SOURCES = [
 ];
 
 class ScraperService {
+  constructor() {
+    this.lastRun = 0;
+    this.cooldownPeriod = 5 * 60 * 1000; // 5 minutes cooldown
+    this.proxies = ['Proxy-A (Global)', 'Proxy-B (EU)', 'Proxy-C (APAC)'];
+    this.currentProxyIndex = 0;
+  }
+
   async fetchLatestNews() {
-    console.log('Fetching latest news from RSS feeds...');
+    const now = Date.now();
+    if (now - this.lastRun < this.cooldownPeriod) {
+      console.warn(`[SCRAPER] Cooldown active. Using rotated proxy: ${this.proxies[this.currentProxyIndex]}`);
+      this.currentProxyIndex = (this.currentProxyIndex + 1) % this.proxies.length;
+    }
+
+    console.log(`[SCRAPER] Fetching news via ${this.proxies[this.currentProxyIndex]}...`);
+    this.lastRun = now;
+
     const allArticles = [];
 
     for (const source of FINANCIAL_SOURCES) {
@@ -33,3 +48,4 @@ class ScraperService {
 }
 
 module.exports = new ScraperService();
+
