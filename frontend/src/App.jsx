@@ -126,10 +126,34 @@ export default function App() {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/summaries`, { params: { date } });
-      setSummaries(res.data.length ? res.data : MOCK_ARTICLES);
+      
+      if (res.data && Array.isArray(res.data)) {
+        if (res.data.length) {
+          setSummaries(res.data);
+        } else {
+          // Fallback to local filter if backend returns empty JSON array
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const [monthStr, yearStr] = date.split(' ');
+          
+          let localFiltered = [];
+          if (monthStr && yearStr && months.includes(monthStr)) {
+            const monthIndex = months.indexOf(monthStr);
+            localFiltered = MOCK_ARTICLES.filter(a => {
+              const d = new Date(a.date);
+              return d.getMonth() === monthIndex && d.getFullYear() === parseInt(yearStr);
+            });
+          } else if (date === 'Today') {
+            localFiltered = MOCK_ARTICLES.filter(a => a.date.includes('2026-04-30'));
+          }
+          setSummaries(localFiltered);
+        }
+      } else {
+        throw new Error("Invalid response format from API");
+      }
     } catch (err) {
       console.error("Fetch error:", err);
-      setSummaries(MOCK_ARTICLES);
+      // Fallback to Today's mock data on error
+      setSummaries(MOCK_ARTICLES.filter(a => a.date.includes('2026-04-30')));
     } finally {
       setTimeout(() => setLoading(false), 600);
     }
@@ -406,10 +430,16 @@ export default function App() {
                 Array(6).fill(0).map((_, i) => (
                   <div key={i} className="h-96 rounded-[40px] skeleton opacity-50" />
                 ))
-              ) : (
+              ) : filtered.length > 0 ? (
                 filtered.map((article, i) => (
                   <SummaryCard key={i} article={article} index={i} recruiterMode={recruiterMode} meta={pulse?.metadata} isStressed={isMarketStressed} />
                 ))
+              ) : (
+                <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 bg-white/40 backdrop-blur-md rounded-[40px] border border-dashed border-blue-200">
+                  <Database size={48} className="mb-4 opacity-20" />
+                  <p className="text-lg font-bold">No narratives found for {selectedHistory}</p>
+                  <p className="text-sm opacity-60">Try selecting a different timeline or running a Live Scrape.</p>
+                </div>
               )}
             </div>
           </div>

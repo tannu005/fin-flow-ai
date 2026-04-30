@@ -52,30 +52,42 @@ if (process.env.MONGODB_URI) {
  *         description: A list of summaries.
  */
 app.get('/api/summaries', async (req, res) => {
-  const { date } = req.query; // Expecting YYYY-MM-DD or Month Year
+  const { date } = req.query; 
   try {
     if (!process.env.MONGODB_URI) {
       let filtered = MOCK_ARTICLES;
       if (date && date !== 'Today') {
-        filtered = MOCK_ARTICLES.filter(a => a.date.includes(date) || (new Date(a.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) === date));
+        filtered = MOCK_ARTICLES.filter(a => {
+          const articleDate = new Date(a.date);
+          const [monthStr, yearStr] = date.split(' ');
+          if (monthStr && yearStr) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthIndex = months.indexOf(monthStr);
+            return articleDate.getMonth() === monthIndex && articleDate.getFullYear() === parseInt(yearStr);
+          }
+          return a.date.includes(date);
+        });
       }
       return res.json(filtered);
     }
 
     let query = {};
     if (date && date !== 'Today') {
-      const targetDate = new Date(date);
-      if (!isNaN(targetDate)) {
-        const start = new Date(targetDate.setHours(0, 0, 0, 0));
-        const end = new Date(targetDate.setHours(23, 59, 59, 999));
-        query.date = { $gte: start, $lte: end };
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const [monthStr, yearStr] = date.split(' ');
+      
+      if (monthStr && yearStr && months.includes(monthStr)) {
+        const monthIndex = months.indexOf(monthStr);
+        const year = parseInt(yearStr);
+        const start = new Date(year, monthIndex, 1);
+        const end = new Date(year, monthIndex + 1, 1);
+        query.date = { $gte: start, $lt: end };
       } else {
-        // Handle "Month Year" format
-        const [month, year] = date.split(' ');
-        if (month && year) {
-          const start = new Date(`${month} 1, ${year}`);
-          const end = new Date(new Date(start).setMonth(start.getMonth() + 1));
-          query.date = { $gte: start, $lt: end };
+        const targetDate = new Date(date);
+        if (!isNaN(targetDate)) {
+          const start = new Date(targetDate.setHours(0, 0, 0, 0));
+          const end = new Date(targetDate.setHours(23, 59, 59, 999));
+          query.date = { $gte: start, $lte: end };
         }
       }
     }

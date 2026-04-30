@@ -2,36 +2,42 @@ const NEWS_CATEGORIES = ['Finance', 'Markets', 'Economy', 'Tech', 'Crypto'];
 
 const MOCK_ARTICLES = [
   {
-    id: '1',
-    headline: 'Global Markets Rally on Inflation Cooling Signs',
-    summary: 'Stock indices across the US and Europe saw significant gains today as new data suggests inflation might be easing faster than anticipated.',
+    id: 'apr-30-1',
+    headline: "Oil Hits $125/bbl Amid Strait of Hormuz Blockade",
+    summary: "Global energy markets are in shock as the Strait of Hormuz remains blocked, disrupting 20% of world oil supply. Brent crude has surged to its highest level since 2022.",
     key_insights: [
-      'S&P 500 rose by 1.5% in early trading.',
-      'European Central Bank hints at potential rate pause.',
-      'Tech sector leads the rally with major gains in AI-related stocks.'
+      "10 million barrels/day supply shock identified.",
+      "Global inflation forecast revised to 5.8%.",
+      "Defensive sectors (Pharma, FMCG) showing relative strength."
     ],
-    category: 'Markets',
-    source: 'Financial Times',
-    sentiment: 'Positive',
-    topics: ['Inflation', 'Stock Market', 'AI'],
-    date: '2026-04-30T10:00:00Z',
-    url: 'https://ft.com/markets-rally-2026'
+    sentiment: "Negative",
+    confidence: 96,
+    impact: "High",
+    projection: "Energy costs to tax corporate margins throughout Q2; expect continued pressure on Auto and Paint sectors.",
+    category: "Economy",
+    topics: ["Oil", "Stagflation", "Geopolitics"],
+    source: "Bloomberg",
+    date: "2026-04-30T16:45:00Z",
+    url: "https://www.bloomberg.com/news/articles/2026-04-30/oil-prices-skyrocket-strait-of-hormuz"
   },
   {
-    id: '2',
-    headline: 'Central Banks Weigh Further Rate Hikes Amid Wage Growth',
-    summary: 'Despite cooling headline inflation, persistent wage growth is keeping central bankers on alert, suggesting high rates might stay for longer.',
+    id: 'apr-30-2',
+    headline: "Nifty 50 Dips to 23,925; 8% Correction Since Jan Peak",
+    summary: "The Indian benchmark index has broken critical support levels as foreign institutional investors pull out amid global risk-off sentiment.",
     key_insights: [
-      'Labor market remains tight in major economies.',
-      'Fed officials express caution over cutting rates too early.',
-      'Bond yields fluctuate as investors reassess policy outlook.'
+      "VIX surged to 19.25, signaling extreme market fear.",
+      "Reliance and ONGC benefiting from energy price spike.",
+      "FII net outflows exceed $4B in April."
     ],
-    category: 'Economy',
-    source: 'Reuters',
-    sentiment: 'Negative',
-    topics: ['Interest Rates', 'Labor Market', 'Central Banks'],
-    date: '2026-04-30T12:00:00Z',
-    url: 'https://reuters.com/economy-rates-2026'
+    sentiment: "Negative",
+    confidence: 92,
+    impact: "High",
+    projection: "Support at 23,500 is critical; if broken, expect a slide toward 22,000 baseline.",
+    category: "Markets",
+    topics: ["Nifty 50", "VIX", "FII Outflows"],
+    source: "Reuters",
+    date: "2026-04-30T16:45:00Z",
+    url: "https://www.reuters.com/business/markets/nifty-india-correction-2026-04-30/"
   },
   {
     id: 'jan-1',
@@ -41,9 +47,27 @@ const MOCK_ARTICLES = [
     category: 'Markets',
     source: 'Mint',
     sentiment: 'Positive',
+    confidence: 94,
+    impact: "High",
+    projection: "The 26,000 level is a psychological barrier; consolidation is expected before the next leg up.",
     topics: ['New Year Rally', 'Nifty', 'FII'],
     date: '2026-01-15T09:00:00Z',
-    url: 'https://livemint.com/nifty-jan-2026'
+    url: 'https://www.livemint.com/market/stock-market-news/nifty-reaches-26000-milestone-january-2026'
+  },
+  {
+    id: 'jan-2',
+    headline: 'Sovereign AI: India Announces National Compute Grid',
+    summary: 'The Indian government unveils a $10B plan to build a decentralized AI compute grid to reduce reliance on global cloud providers.',
+    key_insights: ['100,000 GPUs to be deployed by 2027', 'Focus on local language models', 'Partnerships with domestic tech giants'],
+    category: 'Tech',
+    source: 'Economic Times',
+    sentiment: 'Positive',
+    confidence: 91,
+    impact: "Medium",
+    projection: "Long-term bullish for Indian hardware and infrastructure providers.",
+    topics: ['AI', 'Sovereign AI', 'Infrastructure'],
+    date: '2026-01-20T11:00:00Z',
+    url: 'https://economictimes.indiatimes.com/tech/ites/india-ai-compute-grid-jan-2026'
   },
   {
     id: 'feb-1',
@@ -53,9 +77,27 @@ const MOCK_ARTICLES = [
     category: 'Economy',
     source: 'Bloomberg',
     sentiment: 'Negative',
+    confidence: 90,
+    impact: "Medium",
+    projection: "Expect increased volatility in energy-sensitive sectors like Auto and Aviation.",
     topics: ['Oil', 'Geopolitics', 'Energy'],
     date: '2026-02-10T14:00:00Z',
-    url: 'https://bloomberg.com/energy-feb-2026'
+    url: 'https://www.bloomberg.com/news/energy/2026-02-10/oil-prices-rise-geopolitics'
+  },
+  {
+    id: 'feb-2',
+    headline: 'Bitcoin Stabilizes at $85k After ETF Inflow Surge',
+    summary: 'Institutional adoption of Bitcoin continues as major pension funds allocate 1% of their portfolios to spot BTC ETFs.',
+    key_insights: ['ETF inflows hit $10B in Feb', 'Volatility decreases as liquidity improves', 'Correlation with tech stocks weakening'],
+    category: 'Crypto',
+    source: 'CoinDesk',
+    sentiment: 'Positive',
+    confidence: 89,
+    impact: "Medium",
+    projection: "Bitcoin is maturing into a standard asset class; expect slower but steadier growth.",
+    topics: ['Bitcoin', 'ETFs', 'Institutional Adoption'],
+    date: '2026-02-25T10:00:00Z',
+    url: 'https://www.coindesk.com/markets/2026-02-25/bitcoin-85k-institutional-inflow'
   },
   {
     id: 'mar-1',
@@ -65,9 +107,27 @@ const MOCK_ARTICLES = [
     category: 'Tech',
     source: 'The Verge',
     sentiment: 'Neutral',
+    confidence: 88,
+    impact: "High",
+    projection: "Companies with reserved compute capacity will outperform; others will face R&D delays.",
     topics: ['AI Chips', 'NVIDIA', 'Sovereign AI'],
     date: '2026-03-20T11:00:00Z',
-    url: 'https://theverge.com/ai-shortage-2026'
+    url: 'https://www.theverge.com/2026/3/20/ai-compute-shortage-crisis'
+  },
+  {
+    id: 'mar-2',
+    headline: 'Fed Holds Rates at 5.5% as Inflation Remains Sticky',
+    summary: 'The Federal Reserve maintains its benchmark interest rate, citing persistent wage growth and high energy costs as barriers to cutting.',
+    key_insights: ['Job market remains robust', 'Energy prices adding 0.5% to CPI', 'Rate cuts unlikely before Q4'],
+    category: 'Economy',
+    source: 'CNBC',
+    sentiment: 'Neutral',
+    confidence: 93,
+    impact: "Medium",
+    projection: "High-for-longer regime continues; focus on cash-rich companies with low debt.",
+    topics: ['Federal Reserve', 'Inflation', 'Interest Rates'],
+    date: '2026-03-28T15:00:00Z',
+    url: 'https://www.cnbc.com/2026/03/28/fed-rate-decision-march-2026'
   }
 ];
 
