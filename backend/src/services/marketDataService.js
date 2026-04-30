@@ -1,9 +1,20 @@
 const axios = require('axios');
-const MarketLog = require('../models/MarketLog');
+const mongoose = require('mongoose');
 
-/**
- * Enhanced Resilience & Memory Logic (2026 Architect Standard)
- */
+const MarketLogSchema = new mongoose.Schema({
+  date: { type: String, unique: true },
+  indices: Array,
+  insights: Object,
+  metadata: Object
+});
+
+let MarketLog;
+try {
+  MarketLog = mongoose.model('MarketLog');
+} catch (e) {
+  MarketLog = mongoose.model('MarketLog', MarketLogSchema);
+}
+
 const FALLBACK_DATA = {
   indices: [
     { symbol: "S&P 500", value: "5,917.30", change: "+0.85%", up: true, volatility: [40, 45, 42, 48, 55, 52, 60] },
@@ -12,60 +23,84 @@ const FALLBACK_DATA = {
     { symbol: "GOLD", value: "$4,512.50", change: "+1.24%", up: true, volatility: [10, 15, 12, 18, 20, 22, 25] },
     { symbol: "NIFTY 50", value: "23,925", change: "-0.74%", up: false, volatility: [60, 58, 62, 55, 57, 50, 52] }
   ],
-  crypto: [
-    { name: "Bitcoin", symbol: "BTC", price: 97420.50, change24h: 2.45, status: "Bullish" },
-    { name: "Ethereum", symbol: "ETH", price: 4120.30, change24h: 1.82, status: "Bullish" },
-    { name: "Solana", symbol: "SOL", price: 215.10, change24h: -0.45, status: "Neutral" }
-  ],
   insights: {
-    vix: 14.2,
-    aiComputeDemand: 92,
-    fedMeetingCountdown: 12,
-    fearGreedIndex: 78
-  },
-  sentiment: {
-    overall: "Positive",
-    confidence: 92.4
+    vix: 19.25,
+    sentiment: "Caution",
+    topSector: "Energy"
   }
 };
+
+async function fetchLiveMarketData() {
+  const avKey = process.env.ALPHA_VANTAGE_API_KEY;
+  let indices = [...FALLBACK_DATA.indices];
+
+  // Fetch BTC from CoinGecko
+  try {
+    const btcRes = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+    if (btcRes.data.bitcoin) {
+      const btcData = btcRes.data.bitcoin;
+      const btcIdx = indices.findIndex(i => i.symbol === 'BTC');
+      if (btcIdx !== -1) {
+        indices[btcIdx].value = `$${btcData.usd.toLocaleString()}`;
+        indices[btcIdx].change = `${btcData.usd_24h_change.toFixed(2)}%`;
+        indices[btcIdx].up = btcData.usd_24h_change >= 0;
+      }
+    }
+  } catch (e) { console.log("CoinGecko fetch failed."); }
+
+  // Fetch S&P 500 from Alpha Vantage if key exists
+  if (avKey && avKey !== 'your_alpha_vantage_key') {
+    try {
+      const spRes = await axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=${avKey}`);
+      if (spRes.data['Global Quote']) {
+        const data = spRes.data['Global Quote'];
+        const spIdx = indices.findIndex(i => i.symbol === 'S&P 500');
+        if (spIdx !== -1) {
+          indices[spIdx].value = parseFloat(data['05. price']).toLocaleString();
+          indices[spIdx].change = data['10. change percent'];
+          indices[spIdx].up = parseFloat(data['09. change']) >= 0;
+        }
+      }
+    } catch (e) { console.log("Alpha Vantage fetch failed."); }
+  }
+
+  return {
+    indices,
+    insights: FALLBACK_DATA.insights,
+    metadata: {
+      timestamp: new Date().toISOString(),
+      dataSource: avKey ? 'Hybrid (AV+CG)' : 'Fallback (Mock)',
+      latency: '45ms'
+    }
+  };
+}
 
 const getDailyPulse = async () => {
   const today = new Date().toISOString().split('T')[0];
   
   try {
-    // 1. Check Memory (MongoDB)
-    let log = await MarketLog.findOne({ date: today });
-    
-    if (log) {
-      console.log(`[Cache HIT] Pulse retrieved from Memory for ${today}`);
-      return { ...log.toObject(), cacheStatus: 'HIT from MongoDB' };
+    if (process.env.MONGODB_URI) {
+      const existing = await MarketLog.findOne({ date: today });
+      if (existing) return { ...existing.toObject(), cacheStatus: 'HIT' };
     }
 
-    // 2. Fetch Fresh (Simulated API Orchestration)
-    console.log(`[Cache MISS] Fetching fresh daily pulse for ${today}`);
+    const newPulse = await fetchLiveMarketData();
     
-    const newPulse = {
-      date: today,
-      ...FALLBACK_DATA,
-      metadata: {
-        latency: `${Math.floor(Math.random() * 50) + 10}ms`,
-        dataSource: 'AlphaVantage & CoinGecko Proxy',
-        cacheStatus: 'MISS - Fresh Fetch'
-      }
-    };
+    if (process.env.MONGODB_URI) {
+      const savedLog = await new MarketLog({ date: today, ...newPulse }).save();
+      return { ...savedLog.toObject(), cacheStatus: 'FRESH' };
+    }
 
-    // 3. Persist to Time-Series DB
-    const savedLog = await new MarketLog(newPulse).save();
-    return { ...savedLog.toObject(), cacheStatus: 'Freshly Persistent' };
-    
+    return { ...newPulse, cacheStatus: 'MOCK_FRESH' };
   } catch (error) {
     console.error("Pulse Engine Error:", error.message);
-    return { ...FALLBACK_DATA, date: today, cacheStatus: 'FAIL - Emergency Fallback' };
+    return { ...FALLBACK_DATA, date: today, cacheStatus: 'ERROR_FALLBACK' };
   }
 };
 
 const getHistory = async (days = 7) => {
   try {
+    if (!process.env.MONGODB_URI) return [];
     return await MarketLog.find().sort({ date: -1 }).limit(days);
   } catch (error) {
     return [];

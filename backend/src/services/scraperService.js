@@ -1,3 +1,5 @@
+const puppeteer = require('puppeteer');
+const NewsAPI = require('newsapi');
 const RSSParser = require('rss-parser');
 const parser = new RSSParser();
 
@@ -8,24 +10,71 @@ const FINANCIAL_SOURCES = [
 
 class ScraperService {
   constructor() {
-    this.lastRun = 0;
-    this.cooldownPeriod = 5 * 60 * 1000; // 5 minutes cooldown
-    this.proxies = ['Proxy-A (Global)', 'Proxy-B (EU)', 'Proxy-C (APAC)'];
-    this.currentProxyIndex = 0;
+    this.newsapi = process.env.NEWS_API_KEY ? new NewsAPI(process.env.NEWS_API_KEY) : null;
   }
 
   async fetchLatestNews() {
-    const now = Date.now();
-    if (now - this.lastRun < this.cooldownPeriod) {
-      console.warn(`[SCRAPER] Cooldown active. Using rotated proxy: ${this.proxies[this.currentProxyIndex]}`);
-      this.currentProxyIndex = (this.currentProxyIndex + 1) % this.proxies.length;
+    let articles = [];
+
+    // 1. Try Puppeteer for high-fidelity scraping (e.g., Bloomberg/CNBC)
+    try {
+      articles = await this.scrapeWithPuppeteer();
+      if (articles.length > 0) return articles;
+    } catch (e) {
+      console.warn("[SCRAPER] Puppeteer failed, trying NewsAPI...", e.message);
     }
 
-    console.log(`[SCRAPER] Fetching news via ${this.proxies[this.currentProxyIndex]}...`);
-    this.lastRun = now;
+    // 2. Fallback to NewsAPI
+    if (this.newsapi) {
+      try {
+        const response = await this.newsapi.v2.topHeadlines({
+          category: 'business',
+          language: 'en',
+          country: 'us'
+        });
+        articles = response.articles.map(a => ({
+          headline: a.title,
+          content: a.description || a.content || a.title,
+          url: a.url,
+          source: a.source.name,
+          date: a.publishedAt
+        }));
+        if (articles.length > 0) return articles;
+      } catch (e) {
+        console.warn("[SCRAPER] NewsAPI failed, falling back to RSS.");
+      }
+    }
 
+    // 3. Last Resort: RSS
+    return await this.fetchFromRSS();
+  }
+
+  async scrapeWithPuppeteer() {
+    // Only attempt if we are not in a restricted environment
+    const browser = await puppeteer.launch({ 
+      headless: "new",
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page = await browser.newPage();
+    try {
+      await page.goto('https://www.reuters.com/business/', { waitUntil: 'networkidle2', timeout: 30000 });
+      const scraped = await page.evaluate(() => {
+        const items = Array.from(document.querySelectorAll('li[data-testid="item"]')).slice(0, 5);
+        return items.map(i => ({
+          headline: i.querySelector('h3')?.innerText,
+          url: i.querySelector('a')?.href,
+          source: 'Reuters (Live)',
+          date: new Date().toISOString()
+        }));
+      });
+      return scraped.filter(s => s.headline && s.url);
+    } finally {
+      await browser.close();
+    }
+  }
+
+  async fetchFromRSS() {
     const allArticles = [];
-
     for (const source of FINANCIAL_SOURCES) {
       try {
         const feed = await parser.parseURL(source.url);
@@ -42,10 +91,8 @@ class ScraperService {
         console.error(`Error fetching from ${source.name}:`, error.message);
       }
     }
-
-    return allArticles.slice(0, 10); // Limit for demo
+    return allArticles.slice(0, 10);
   }
 }
 
 module.exports = new ScraperService();
-

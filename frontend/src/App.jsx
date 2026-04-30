@@ -16,17 +16,27 @@ import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS,
 
 const API_URL = import.meta.env.VITE_API_URL || '/_backend/api';
 
-/* ── Sparkline Helper ── */
-const Sparkline = ({ data, color, width = 70, height = 30 }) => {
+import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
+
+const Sparkline = ({ data, color }) => {
   if (!data || data.length < 2) return null;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const points = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 4) - 2}`).join(' ');
+  const chartData = data.map((v, i) => ({ value: v }));
   return (
-    <svg width={width} height={height} className="opacity-80">
-      <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={points} />
-    </svg>
+    <div style={{ width: 70, height: 30 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData}>
+          <YAxis hide domain={['dataMin - 1', 'dataMax + 1']} />
+          <Line 
+            type="monotone" 
+            dataKey="value" 
+            stroke={color} 
+            strokeWidth={2} 
+            dot={false} 
+            isAnimationActive={false}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
@@ -81,83 +91,41 @@ const MarketTicker = ({ pulse }) => (
   </div>
 );
 
+const fetcher = url => axios.get(url).then(res => res.data);
+
 export default function App() {
-  const [summaries, setSummaries] = useState(MOCK_ARTICLES);
-  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [recruiterMode, setRecruiterMode] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [logs, setLogs] = useState([]);
+  const [lastScrapeResult, setLastScrapeResult] = useState(null);
   const [view, setView] = useState('dashboard');
   const [selectedHistory, setSelectedHistory] = useState('Today');
 
-  const { pulse, health, manualSync, isValidating } = useMarketPulse();
+  // Real-time Data Fetching with SWR
+  const { data: pulse, mutate: mutatePulse } = useSWR(`${API_URL}/market-pulse`, fetcher, { refreshInterval: 30000 });
+  const { data: summariesRaw, mutate: mutateSummaries } = useSWR(`${API_URL}/summaries?date=${selectedHistory}`, fetcher);
+  const { data: health } = useSWR(`${API_URL}/health`, fetcher);
+
+  const summaries = summariesRaw || MOCK_ARTICLES;
 
   const trendingTopics = useMemo(() => {
     const topics = {};
-    // Use search-filtered summaries to derive trending topics
-    filtered.forEach(s => {
+    const list = summaries.filter(s => {
+      const headline = s.headline || '';
+      const summary = s.summary || '';
+      return headline.toLowerCase().includes(search.toLowerCase()) || summary.toLowerCase().includes(summary.toLowerCase());
+    });
+    list.forEach(s => {
       s.topics?.forEach(t => topics[t] = (topics[t] || 0) + 1);
     });
     return Object.entries(topics).sort((a, b) => b[1] - a[1]).slice(0, 10).map(t => t[0]);
-  }, [filtered]);
+  }, [summaries, search]);
 
   useEffect(() => {
-    const lastSync = localStorage.getItem('last_sync_date');
-    const today = new Date().toISOString().split('T')[0];
-
-    if (lastSync !== today) {
-      handleScrape();
-      localStorage.setItem('last_sync_date', today);
-    }
-
-    // Auto-Pulse: Automate Refresh Daily
-    const refreshInterval = setInterval(() => {
-      console.log("[AUTO-PULSE] Triggering daily automated refresh...");
-      handleSync();
-    }, 1000 * 60 * 60 * 24); // 24 Hours
-
     gsap.from('.reveal-up', { y: 30, stagger: 0.1, duration: 1, ease: 'expo.out' });
-    return () => clearInterval(refreshInterval);
-  }, []);
-
-  const fetchData = useCallback(async (date = 'Today') => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_URL}/summaries`, { params: { date } });
-      
-      if (res.data && Array.isArray(res.data)) {
-        if (res.data.length) {
-          setSummaries(res.data);
-        } else {
-          // Fallback to local filter if backend returns empty JSON array
-          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          const [monthStr, yearStr] = date.split(' ');
-          
-          let localFiltered = [];
-          if (monthStr && yearStr && months.includes(monthStr)) {
-            const monthIndex = months.indexOf(monthStr);
-            localFiltered = MOCK_ARTICLES.filter(a => {
-              const d = new Date(a.date);
-              return d.getMonth() === monthIndex && d.getFullYear() === parseInt(yearStr);
-            });
-          } else if (date === 'Today') {
-            localFiltered = MOCK_ARTICLES.filter(a => a.date.includes('2026-04-30'));
-          }
-          setSummaries(localFiltered);
-        }
-      } else {
-        throw new Error("Invalid response format from API");
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-      // Fallback to Today's mock data on error
-      setSummaries(MOCK_ARTICLES.filter(a => a.date.includes('2026-04-30')));
-    } finally {
-      setTimeout(() => setLoading(false), 600);
-    }
-  }, []);
+  }, [view, category]);
 
   const handleSync = async () => {
     gsap.to('.sync-icon', { rotation: '+=360', duration: 0.8, ease: 'power2.inOut' });
@@ -199,15 +167,13 @@ export default function App() {
     try {
       const res = await axios.post(`${API_URL}/scrape`);
       setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ✅ Scrape Success: ${res.data.count} articles processed.`]);
-      // Fetch latest data to refresh UI
-      await fetchData(selectedHistory);
+      mutateSummaries();
       setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] 🚀 Dashboard Synchronized.`]);
     } catch (err) {
       setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ❌ Scrape Failed: ${err.message}`]);
     } finally {
       setTimeout(() => {
         setLoading(false);
-        // Don't close immediately so user sees success message
         setTimeout(() => setShowLogs(false), 2000);
       }, 1000);
     }
@@ -357,47 +323,51 @@ export default function App() {
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <p className="text-[10px] font-black text-blue-600 tracking-[0.3em] uppercase mb-2 flex items-center gap-2">
-                      <Sparkles size={12} /> 2026 Narrative Cluster
+                      <Sparkles size={12} /> {recruiterMode ? 'Talent Intelligence' : '2026 Narrative Cluster'}
                     </p>
                     <h2 className="text-4xl font-black text-slate-900 leading-none">
-                      Market <span className="text-blue-600">Trajectory</span>
+                      {recruiterMode ? 'Talent Flow' : 'Market Trajectory'}
                     </h2>
                   </div>
-                  <div className="text-right group relative">
-                    <div className="flex items-center gap-1.5 justify-end">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sentiment Confidence</p>
-                      <Info size={10} className="text-slate-300 cursor-help" />
+                </div>
+                
+                {recruiterMode ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Top Hiring Sectors (Tech)</p>
+                      {['AI Engineering', 'Cybersecurity', 'Cloud Infra'].map((s, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                          <span className="text-sm font-bold">{s}</span>
+                          <span className="text-[10px] font-black text-blue-600">GROWTH +{35 - i * 5}%</span>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-2xl font-black text-emerald-600">92.4%</p>
-                    
-                    {/* Methodology Tooltip */}
-                    <div className="absolute right-0 top-full mt-2 w-48 p-3 bg-slate-900 text-white text-[9px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-[60] pointer-events-none shadow-2xl font-mono leading-relaxed">
-                      <p className="mb-2 text-blue-400"># METHODOLOGY</p>
-                      Weighted aggregate of NLP sentiment from 400+ premium sources (FT, Bloomberg, Reuters) vs. real-time order flow imbalances.
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Layoffs vs New Openings (AI)</p>
+                      <div className="h-32 flex items-end gap-2">
+                        <div className="flex-1 bg-rose-400 rounded-t-xl" style={{ height: '40%' }} title="Layoffs" />
+                        <div className="flex-1 bg-emerald-400 rounded-t-xl" style={{ height: '85%' }} title="New Openings" />
+                      </div>
+                      <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase">
+                        <span>Layoffs (12k)</span>
+                        <span>Openings (45k)</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <TrajectoryChart data={HISTORICAL_TIMELINE_2026} />
+                ) : (
+                  <TrajectoryChart data={HISTORICAL_TIMELINE_2026} />
+                )}
               </div>
 
               <div className="reveal-up liquid-glass p-8 bg-blue-900/5 border-blue-100/50 flex flex-col justify-between">
                 <div>
                   <h3 className="font-bold text-xs flex items-center gap-2 text-slate-900 uppercase tracking-widest mb-4">
-                    <Zap size={16} className="text-blue-500" /> {recruiterMode ? 'Talent Demand Peaks' : 'Viral Signals'}
+                    <Zap size={16} className="text-blue-500" /> {recruiterMode ? 'Trending Hot Skills' : 'Viral Signals'}
                   </h3>
                   {recruiterMode ? (
-                    <div className="space-y-4">
-                      {RECRUITER_DATA.talentDemand.map(td => (
-                        <div key={td.sector} className="flex flex-col gap-1">
-                          <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter">
-                            <span>{td.sector}</span>
-                            <span className="text-blue-600">{td.demand}</span>
-                          </div>
-                          <div className="h-1.5 w-full bg-blue-100 rounded-full overflow-hidden flex">
-                            <div className="h-full bg-blue-600" style={{ width: `${td.hiring}%` }} />
-                            <div className="h-full bg-rose-400" style={{ width: `${td.layoffs}%` }} />
-                          </div>
-                        </div>
+                    <div className="flex flex-wrap gap-2">
+                      {['LLM Fine-tuning', 'PyTorch', 'Rust', 'RAG Ops', 'Vector DBs'].map(skill => (
+                        <span key={skill} className="px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold rounded-lg">{skill}</span>
                       ))}
                     </div>
                   ) : (
@@ -405,10 +375,10 @@ export default function App() {
                   )}
                 </div>
                 <div className="mt-8 pt-6 border-t border-blue-100/50">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Primary Catalyst</p>
-                  <div className="flex items-center gap-2 text-rose-600">
-                    <AlertTriangle size={14} />
-                    <span className="text-xs font-black uppercase">Energy Supply Shock</span>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Platform Catalyst</p>
+                  <div className="flex items-center gap-2 text-blue-600">
+                    <Activity size={14} />
+                    <span className="text-xs font-black uppercase">{recruiterMode ? 'AI Transformation Phase 2' : 'Geopolitical Stress'}</span>
                   </div>
                 </div>
               </div>
@@ -528,19 +498,25 @@ export default function App() {
                 Array(6).fill(0).map((_, i) => (
                   <div key={i} className="h-96 rounded-[40px] skeleton opacity-50" />
                 ))
-              ) : view === 'saved' ? (
-                /* History Vault View */
-                <div className="col-span-full space-y-6">
-                  <div className="p-10 rounded-[40px] bg-white/40 backdrop-blur-md border border-dashed border-blue-200 text-center">
-                    <Bookmark size={48} className="mx-auto mb-4 text-blue-400 opacity-40" />
-                    <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Your History Vault</h2>
-                    <p className="text-slate-500 max-w-md mx-auto mt-2">Saved narratives and bookmarked insights will appear here for long-term strategic analysis.</p>
-                  </div>
-                </div>
-              ) : filtered.length > 0 ? (
-                filtered.map((article, i) => (
-                  <SummaryCard key={i} article={article} index={i} recruiterMode={recruiterMode} meta={pulse?.metadata} isStressed={isMarketStressed} />
-                ))
+              ) : view === 'saved' || filtered.length > 0 ? (
+                /* Dynamic Feed / History Vault Feed */
+                <>
+                  {view === 'saved' && (
+                    <div className="col-span-full mb-4 p-6 bg-slate-900 text-white rounded-[32px] flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Calendar size={24} className="text-blue-400" />
+                        <div>
+                          <h2 className="text-lg font-black uppercase">History Vault: {selectedHistory}</h2>
+                          <p className="text-[10px] text-slate-400 font-bold tracking-widest">ARCHIVED INTELLIGENCE PIPELINE</p>
+                        </div>
+                      </div>
+                      <div className="text-[10px] font-mono opacity-50">State: Read-Only Archive</div>
+                    </div>
+                  )}
+                  {filtered.map((article, i) => (
+                    <SummaryCard key={i} article={article} index={i} recruiterMode={recruiterMode} meta={pulse?.metadata} isStressed={isMarketStressed} />
+                  ))}
+                </>
               ) : (
                 <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 bg-white/40 backdrop-blur-md rounded-[40px] border border-dashed border-blue-200">
                   <Database size={48} className="mb-4 opacity-20" />

@@ -96,13 +96,19 @@ const SummaryCard = ({ article, index = 0, recruiterMode = false, meta = {}, isS
       </div>
 
       {/* ── Footer Info ── */}
-      <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
           <Server size={12} /> {article.source}
         </div>
-        <a href={article.url} target="_blank" className="text-blue-600 text-[11px] font-bold flex items-center gap-1 hover:underline">
-          Analysis Details <ExternalLink size={12} />
-        </a>
+        <div className="flex items-center gap-3">
+          <a 
+            href={article.url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-600 text-[11px] font-bold flex items-center gap-1 hover:underline group"
+          >
+            [View Source] <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </a>
+        </div>
       </div>
 
       {/* ── Data Lifecycle (Recruiter Mode) ── */}
