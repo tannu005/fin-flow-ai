@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import axios from 'axios';
 import gsap from 'gsap';
 import {
@@ -14,7 +15,7 @@ import Heatmap from './components/Heatmap';
 import { useMarketPulse } from './hooks/useMarketPulse';
 import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS, RECRUITER_DATA } from './constants';
 
-const API_URL = import.meta.env.VITE_API_URL || '/_backend/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 
@@ -42,6 +43,7 @@ const Sparkline = ({ data, color }) => {
 
 /* ── Trajectory Chart (2026 Focus) ── */
 const TrajectoryChart = ({ data }) => {
+  if (!data || data.length < 2) return <div className="h-32 flex items-center justify-center text-slate-400 text-xs">Insufficient trend data</div>;
   const points = data.map((d, i) => `${(i / (data.length - 1)) * 400},${100 - ((d.nifty - 23000) / (27000 - 23000)) * 100}`).join(' ');
   return (
     <div className="relative w-full h-32 mt-6">
@@ -99,28 +101,34 @@ export default function App() {
   const [recruiterMode, setRecruiterMode] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [logs, setLogs] = useState([]);
-  const [lastScrapeResult, setLastScrapeResult] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [view, setView] = useState('dashboard');
   const [selectedHistory, setSelectedHistory] = useState('Today');
 
   // Real-time Data Fetching with SWR
-  const { data: pulse, mutate: mutatePulse } = useSWR(`${API_URL}/market-pulse`, fetcher, { refreshInterval: 30000 });
-  const { data: summariesRaw, mutate: mutateSummaries } = useSWR(`${API_URL}/summaries?date=${selectedHistory}`, fetcher);
+  const { data: pulse, mutate: mutatePulse, isValidating: pulseValidating } = useSWR(`${API_URL}/market-pulse`, fetcher, { refreshInterval: 30000 });
+  const { data: summariesRaw, mutate: mutateSummaries, isValidating: summariesValidating } = useSWR(`${API_URL}/summaries?date=${selectedHistory}`, fetcher);
   const { data: health } = useSWR(`${API_URL}/health`, fetcher);
 
-  const summaries = summariesRaw || MOCK_ARTICLES;
+  const isValidating = pulseValidating || summariesValidating;
+
+  const summaries = Array.isArray(summariesRaw) ? summariesRaw : MOCK_ARTICLES;
 
   const trendingTopics = useMemo(() => {
     const topics = {};
     const list = summaries.filter(s => {
       const headline = s.headline || '';
       const summary = s.summary || '';
-      return headline.toLowerCase().includes(search.toLowerCase()) || summary.toLowerCase().includes(summary.toLowerCase());
+      return headline.toLowerCase().includes(search.toLowerCase()) || summary.toLowerCase().includes(search.toLowerCase());
     });
     list.forEach(s => {
-      s.topics?.forEach(t => topics[t] = (topics[t] || 0) + 1);
+      s.topics?.forEach(t => {
+        if (t && typeof t === 'string' && t.trim() !== '') {
+          topics[t] = (topics[t] || 0) + 1;
+        }
+      });
     });
-    return Object.entries(topics).sort((a, b) => b[1] - a[1]).slice(0, 10).map(t => t[0]);
+    return Object.entries(topics).sort((a, b) => b[1] - a[1]).slice(0, 10).map(t => ({ topic: t[0], count: t[1] }));
   }, [summaries, search]);
 
   useEffect(() => {
@@ -129,14 +137,15 @@ export default function App() {
 
   const handleSync = async () => {
     gsap.to('.sync-icon', { rotation: '+=360', duration: 0.8, ease: 'power2.inOut' });
-    await manualSync();
+    mutatePulse();
+    mutateSummaries();
   };
 
   const handleHistorySelect = (date) => {
     setSelectedHistory(date);
     gsap.to('.dashboard-content', {
       opacity: 0, y: 10, duration: 0.3, onComplete: () => {
-        fetchData(date);
+        mutateSummaries();
         console.log(`[RECRUITER MODE]: Swapped state to ${date} data.`);
         gsap.to('.dashboard-content', { opacity: 1, y: 0, duration: 0.5 });
       }
@@ -180,6 +189,7 @@ export default function App() {
   };
 
   const filtered = summaries.filter(s => {
+    if (!s) return false;
     const matchesCategory = category === 'All' || s.category === category;
     const headline = s.headline || '';
     const summary = s.summary || '';

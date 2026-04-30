@@ -54,7 +54,8 @@ const Heatmap = ({ trendingTopics }) => {
     );
   }
 
-  const maxCount = Math.max(...trendingTopics.map(t => t.count));
+  const counts = trendingTopics.map(t => t.count).filter(c => typeof c === 'number' && !isNaN(c));
+  const maxCount = counts.length > 0 ? Math.max(...counts) : 1;
 
   return (
     <div ref={containerRef} className="flex flex-wrap gap-2.5 items-center">
@@ -67,7 +68,7 @@ const Heatmap = ({ trendingTopics }) => {
             style={style}
             title={`${topicData.count} article${topicData.count !== 1 ? 's' : ''}`}
           >
-            {topicData.topic}
+            {topicData.topic || topicData || 'Unknown'}
             {topicData.count > 1 && (
               <span className="opacity-60 text-[0.65rem]">×{topicData.count}</span>
             )}

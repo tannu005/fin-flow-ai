@@ -34,8 +34,12 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Database Connection
+mongoose.set('bufferCommands', false);
 if (process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGODB_URI)
+  mongoose.connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    bufferCommands: false,
+  })
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 } else {
@@ -54,7 +58,11 @@ if (process.env.MONGODB_URI) {
 app.get('/api/summaries', async (req, res) => {
   const { date } = req.query; 
   try {
-    if (!process.env.MONGODB_URI) {
+    const isConnected = mongoose.connection.readyState === 1;
+    if (!process.env.MONGODB_URI || !isConnected) {
+      if (!isConnected && process.env.MONGODB_URI) {
+        console.warn('MongoDB not connected. Falling back to mock data.');
+      }
       let filtered = MOCK_ARTICLES;
       if (date && date !== 'Today') {
         filtered = MOCK_ARTICLES.filter(a => {
@@ -110,28 +118,58 @@ app.get('/api/summaries', async (req, res) => {
  */
 app.post('/api/scrape', async (req, res) => {
   try {
+    const isConnected = mongoose.connection.readyState === 1;
     const articles = await scraperService.fetchLatestNews();
     const results = [];
 
     for (const article of articles) {
-      if (process.env.MONGODB_URI) {
-        const existing = await Summary.findOne({ url: article.url });
-        if (existing) continue;
+      if (process.env.MONGODB_URI && isConnected) {
+        try {
+          const existing = await Summary.findOne({ url: article.url }).maxTimeMS(2000);
+          if (existing) continue;
+        } catch (findError) {
+          console.warn(`Query failed for ${article.url}, skipping deduplication:`, findError.message);
+        }
       }
 
-      const summaryData = await llmService.summarize(article, !process.env.GEMINI_API_KEY);
+      let summaryData;
+      try {
+        summaryData = await llmService.summarize(article, !process.env.GEMINI_API_KEY);
+      } catch (llmError) {
+        console.error(`LLM Summarization failed for ${article.url}:`, llmError.message);
+        // Robust Fallback: Create a basic summary object from article data
+        summaryData = {
+          headline: article.headline || "Market Update",
+          summary: article.content ? article.content.substring(0, 150) + "..." : "No summary available.",
+          key_insights: ["Live data feed active", "Manual validation recommended"],
+          sentiment: "Neutral",
+          topics: ["Market News"],
+          category: "Markets"
+        };
+      }
       
-      const newSummary = new Summary({
+      const newSummaryData = {
         ...summaryData,
         url: article.url,
         source: article.source,
         date: article.date ? new Date(article.date) : new Date()
-      });
+      };
 
-      if (process.env.MONGODB_URI) {
-        await newSummary.save();
+      if (process.env.MONGODB_URI && isConnected) {
+        try {
+          const newSummary = new Summary(newSummaryData);
+          await newSummary.save();
+          results.push(newSummary.toObject());
+        } catch (dbError) {
+          if (dbError.code === 11000) {
+            console.warn(`Duplicate article skipped: ${newSummaryData.url}`);
+          } else {
+            console.error(`Database save failed: ${dbError.message}`);
+          }
+        }
+      } else {
+        results.push({ ...newSummaryData, _id: Date.now() + Math.random() });
       }
-      results.push(newSummary);
     }
 
     res.json({ message: 'Scrape completed', count: results.length, data: results });
@@ -153,7 +191,8 @@ app.post('/api/scrape', async (req, res) => {
 app.get('/api/heatmap', async (req, res) => {
   try {
     let summaries = [];
-    if (!process.env.MONGODB_URI) {
+    const isConnected = mongoose.connection.readyState === 1;
+    if (!process.env.MONGODB_URI || !isConnected) {
       summaries = MOCK_ARTICLES;
     } else {
       summaries = await Summary.find();
@@ -166,11 +205,11 @@ app.get('/api/heatmap', async (req, res) => {
       if (s.sentiment && sentimentCounts[s.sentiment] !== undefined) {
         sentimentCounts[s.sentiment]++;
       }
-      if (s.topics && Array.isArray(s.topics)) {
-        s.topics.forEach(topic => {
-          topicCounts[topic] = (topicCounts[topic] || 0) + 1;
-        });
-      }
+      s.topics?.forEach(t => {
+        if (t && typeof t === 'string' && t.trim() !== '') {
+          topicCounts[t] = (topicCounts[t] || 0) + 1;
+        }
+      });
     });
 
     const trendingTopics = Object.entries(topicCounts)

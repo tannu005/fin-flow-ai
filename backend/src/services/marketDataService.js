@@ -79,14 +79,19 @@ const getDailyPulse = async () => {
   const today = new Date().toISOString().split('T')[0];
   
   try {
-    if (process.env.MONGODB_URI) {
-      const existing = await MarketLog.findOne({ date: today });
-      if (existing) return { ...existing.toObject(), cacheStatus: 'HIT' };
+    const isConnected = mongoose.connection.readyState === 1;
+    if (process.env.MONGODB_URI && isConnected) {
+      try {
+        const existing = await MarketLog.findOne({ date: today }).maxTimeMS(2000);
+        if (existing) return { ...existing.toObject(), cacheStatus: 'HIT' };
+      } catch (findError) {
+        console.warn('MarketLog query failed, using live data:', findError.message);
+      }
     }
 
     const newPulse = await fetchLiveMarketData();
     
-    if (process.env.MONGODB_URI) {
+    if (process.env.MONGODB_URI && isConnected) {
       const savedLog = await new MarketLog({ date: today, ...newPulse }).save();
       return { ...savedLog.toObject(), cacheStatus: 'FRESH' };
     }

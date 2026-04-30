@@ -13,6 +13,7 @@ const SENTIMENT_STYLES = {
 };
 
 const SummaryCard = ({ article, index = 0, recruiterMode = false, meta = {}, isStressed = false }) => {
+  if (!article) return null;
   const cardRef = useRef();
   const [isBookmarked, setIsBookmarked] = useState(false);
 
