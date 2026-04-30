@@ -122,12 +122,13 @@ export default function App() {
     return () => clearInterval(refreshInterval);
   }, []);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (date = 'Today') => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/summaries`);
+      const res = await axios.get(`${API_URL}/summaries`, { params: { date } });
       setSummaries(res.data.length ? res.data : MOCK_ARTICLES);
-    } catch {
+    } catch (err) {
+      console.error("Fetch error:", err);
       setSummaries(MOCK_ARTICLES);
     } finally {
       setTimeout(() => setLoading(false), 600);
@@ -143,6 +144,7 @@ export default function App() {
     setSelectedHistory(date);
     gsap.to('.dashboard-content', {
       opacity: 0, y: 10, duration: 0.3, onComplete: () => {
+        fetchData(date);
         console.log(`[RECRUITER MODE]: Swapped state to ${date} data.`);
         gsap.to('.dashboard-content', { opacity: 1, y: 0, duration: 0.5 });
       }
@@ -153,32 +155,45 @@ export default function App() {
     setLoading(true);
     setShowLogs(true);
     setLogs([]);
-    const steps = [
+    
+    const initialLogs = [
       { time: "17:10:01", msg: "📡 Initializing Chrome Headless (2026v4)..." },
       { time: "17:10:02", msg: "🕵️ Bypassing Cloudflare Turnstile on NSE-India..." },
-      { time: "17:10:03", msg: "🔄 Rotating Proxy: Switch to Node-B (Secure EU Gateway)..." },
-      { time: "17:10:04", msg: "📊 Extracted: Nifty 24,150 (+0.82%)" },
-      { time: "17:10:05", msg: "🛢️ Signal Found: Brent Crude at $121.90/bbl (Stabilizing)." },
-      { time: "17:10:06", msg: "🤖 Analysis: 'Neutral' sentiment emerging; VIX normalized to 14.2." },
-      { time: "17:10:07", msg: "✅ State Synced. Dashboard Updated." }
+      { time: "17:10:03", msg: "🔄 Rotating Proxy: Switch to Node-B (Secure EU Gateway)..." }
     ];
+
     let i = 0;
-    const interval = setInterval(() => {
-      if (i < steps.length) {
-        setLogs(prev => [...prev, `[${steps[i].time}] ${steps[i].msg}`]);
+    const logInterval = setInterval(() => {
+      if (i < initialLogs.length) {
+        setLogs(prev => [...prev, `[${initialLogs[i].time}] ${initialLogs[i].msg}`]);
         i++;
       } else {
-        clearInterval(interval);
-        fetchData();
-        setTimeout(() => setShowLogs(false), 4000);
+        clearInterval(logInterval);
       }
-    }, 800);
+    }, 600);
+
+    try {
+      const res = await axios.post(`${API_URL}/scrape`);
+      setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ✅ Scrape Success: ${res.data.count} articles processed.`]);
+      fetchData(selectedHistory);
+    } catch (err) {
+      setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ❌ Scrape Failed: ${err.message}`]);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+        setTimeout(() => setShowLogs(false), 3000);
+      }, 1000);
+    }
   };
 
-  const filtered = summaries.filter(s =>
-    (category === 'All' || s.category === category) &&
-    (s.headline.toLowerCase().includes(search.toLowerCase()) || s.summary.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filtered = summaries.filter(s => {
+    const matchesCategory = category === 'All' || s.category === category;
+    const headline = s.headline || '';
+    const summary = s.summary || '';
+    const matchesSearch = headline.toLowerCase().includes(search.toLowerCase()) || 
+                          summary.toLowerCase().includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   // Force Stress Mode for April 30, 2026 Demo
   // Force Healthy State for May 1, 2026 Demo

@@ -52,11 +52,35 @@ if (process.env.MONGODB_URI) {
  *         description: A list of summaries.
  */
 app.get('/api/summaries', async (req, res) => {
+  const { date } = req.query; // Expecting YYYY-MM-DD or Month Year
   try {
     if (!process.env.MONGODB_URI) {
-      return res.json(MOCK_ARTICLES);
+      let filtered = MOCK_ARTICLES;
+      if (date && date !== 'Today') {
+        filtered = MOCK_ARTICLES.filter(a => a.date.includes(date) || (new Date(a.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) === date));
+      }
+      return res.json(filtered);
     }
-    const summaries = await Summary.find().sort({ date: -1 });
+
+    let query = {};
+    if (date && date !== 'Today') {
+      const targetDate = new Date(date);
+      if (!isNaN(targetDate)) {
+        const start = new Date(targetDate.setHours(0, 0, 0, 0));
+        const end = new Date(targetDate.setHours(23, 59, 59, 999));
+        query.date = { $gte: start, $lte: end };
+      } else {
+        // Handle "Month Year" format
+        const [month, year] = date.split(' ');
+        if (month && year) {
+          const start = new Date(`${month} 1, ${year}`);
+          const end = new Date(new Date(start).setMonth(start.getMonth() + 1));
+          query.date = { $gte: start, $lt: end };
+        }
+      }
+    }
+
+    const summaries = await Summary.find(query).sort({ date: -1 });
     res.json(summaries);
   } catch (error) {
     res.status(500).json({ error: error.message });

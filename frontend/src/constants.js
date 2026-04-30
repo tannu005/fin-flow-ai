@@ -38,118 +38,49 @@ export const MOCK_ARTICLES = [
     url: "https://reuters.com/nifty-crash-2026"
   },
   {
-    id: 3,
-    headline: "Bitcoin Decouples from Equities, Holds $74,012",
-    summary: "Despite the stock market sell-off, Bitcoin is acting as 'Digital Gold,' holding strong near $74k. Institutional ETF inflows recorded $2B in April alone.",
-    key_insights: [
-      "BTC institutional 'Stress Test' successful after 25% Jan dip.",
-      "Massive decoupling from NASDAQ for the first time in 12 months.",
-      "Stabilizing near $72k structural support."
-    ],
-    sentiment: "Positive",
-    confidence: 88,
-    impact: "Medium",
-    projection: "Upside target remains $85k if geopolitical tensions persist as a hedge.",
-    category: "Crypto",
-    topics: ["Bitcoin", "Digital Gold", "ETFs"],
-    source: "Financial Times",
-    date: "2026-04-30T16:45:00Z",
-    url: "https://ft.com/crypto-resilience-2026"
+    id: 'jan-1',
+    headline: 'January 2026: Nifty Hits All-Time High of 26,000',
+    summary: 'The new year starts with a massive rally as foreign investment pours into the Indian tech and green energy sectors.',
+    key_insights: ['FII inflows hit $5B in first week', 'Green energy index up 12%', 'Tech valuations reach new peaks'],
+    category: 'Markets',
+    source: 'Mint',
+    sentiment: 'Positive',
+    confidence: 94,
+    impact: "High",
+    projection: "The 26,000 level is a psychological barrier; consolidation is expected before the next leg up.",
+    topics: ['New Year Rally', 'Nifty', 'FII'],
+    date: '2026-01-15T09:00:00Z',
+    url: 'https://livemint.com/nifty-jan-2026'
   },
   {
-    id: 4,
-    headline: "AI Workforce Restructuring: 45k Layoffs in Q1 2026",
-    summary: "Major tech firms are prioritizing 'Sovereign AI' infrastructure over human workforce, leading to significant layoffs even as compute demand hits new records.",
-    key_insights: [
-      "20% of Q1 layoffs directly attributed to AI automation.",
-      "AI Compute Demand hits 92% capacity globally.",
-      "Focus shifting to decentralized AI protocols."
-    ],
-    sentiment: "Neutral",
+    id: 'feb-1',
+    headline: 'February 2026: Geopolitical Tensions Spark Energy Concerns',
+    summary: 'As tensions rise in the Middle East, oil prices begin their upward climb, putting pressure on global shipping and logistics.',
+    key_insights: ['Brent crude crosses $90/bbl', 'Shipping routes redirected', 'Inflation fears resurface'],
+    category: 'Economy',
+    source: 'Bloomberg',
+    sentiment: 'Negative',
     confidence: 90,
     impact: "Medium",
-    projection: "AI is no longer augmenting—it's replacing. Focus on 'Sovereign AI' stocks like NVIDIA and Microsoft.",
-    category: "Tech",
-    topics: ["AI Layoffs", "Compute Demand", "Sovereign AI"],
-    source: "CNBC",
-    date: "2026-04-30T16:45:00Z",
-    url: "https://cnbc.com/ai-layoffs-2026"
+    projection: "Expect increased volatility in energy-sensitive sectors like Auto and Aviation.",
+    topics: ['Oil', 'Geopolitics', 'Energy'],
+    date: '2026-02-10T14:00:00Z',
+    url: 'https://bloomberg.com/energy-feb-2026'
   },
   {
-    id: 5,
-    headline: "Global Credit Loss Estimate Hits $180B Due to Middle East Conflict",
-    summary: "Financial institutions are bracing for massive credit losses as regional instability impacts global trade and banking channels.",
-    key_insights: [
-      "Shipping costs increased by 300% on key routes.",
-      "Insurance premiums for freight in the Red Sea at all-time highs.",
-      "Banking risk models adjusted for prolonged disruption."
-    ],
-    sentiment: "Negative",
-    confidence: 94,
-    impact: "Critical",
-    projection: "Expect banking sector volatility to remain high until de-escalation occurs.",
-    category: "Economy",
-    topics: ["Credit Loss", "Banking", "Trade"],
-    source: "Bloomberg",
-    date: "2026-04-30T10:00:00Z",
-    url: "https://bloomberg.com/credit-losses-2026"
-  },
-  {
-    id: 6,
-    headline: "Ethereum L3 Scaling Solutions Reach Mass Adoption",
-    summary: "Layer 3 networks are now processing over 100k transactions per second, making decentralized finance accessible for micro-payments.",
-    key_insights: [
-      "Gas fees reduced to near-zero for L3 users.",
-      "Interoperability protocols bridge $50B in assets.",
-      "Institutional adoption of private L3s for settlement."
-    ],
-    sentiment: "Positive",
-    confidence: 91,
-    impact: "Medium",
-    projection: "Ethereum's ecosystem value expected to double as micro-transactions unlock new business models.",
-    category: "Crypto",
-    topics: ["Ethereum", "L3", "Scaling"],
-    source: "CoinDesk",
-    date: "2026-04-30T11:00:00Z",
-    url: "https://coindesk.com/eth-scaling-2026"
-  },
-  {
-    id: 7,
-    headline: "Sovereign AI: Nations Building Independent Compute Clouds",
-    summary: "France, India, and Japan have announced independent AI compute clouds to reduce reliance on US-based hyperscalers.",
-    key_insights: [
-      "Total investment exceeding $120B globally.",
-      "Local language models (LLMs) prioritized for security.",
-      "Data sovereignty laws driving infrastructure shifts."
-    ],
-    sentiment: "Neutral",
-    confidence: 89,
+    id: 'mar-1',
+    headline: 'March 2026: The Great AI Compute Shortage',
+    summary: 'Global demand for AI chips outstrips supply by 3:1, leading to project delays across major tech hubs.',
+    key_insights: ['Wait times for H200 chips reach 8 months', 'Sovereign AI clouds announced in EU', 'NVIDIA stock hits new records'],
+    category: 'Tech',
+    source: 'The Verge',
+    sentiment: 'Neutral',
+    confidence: 88,
     impact: "High",
-    projection: "Independent clouds will create a fragmented but more resilient global AI infrastructure.",
-    category: "Tech",
-    topics: ["Sovereign AI", "Compute Clouds", "Infrastructure"],
-    source: "Wired",
-    date: "2026-04-30T12:00:00Z",
-    url: "https://wired.com/sovereign-ai-2026"
-  },
-  {
-    id: 8,
-    headline: "Nifty Recovers as Energy Prices Stabilize; May 1 Outlook Positive",
-    summary: "As we enter May 2026, the Indian markets are showing signs of resilience. The Strait of Hormuz blockade has partially lifted, and oil prices have cooled to $118/bbl.",
-    key_insights: [
-      "Market sentiment shifting from Fear to Neutral.",
-      "Tech and AI compute demand remains the primary growth driver.",
-      "Foreign inflows expected to return if VIX stays below 15."
-    ],
-    sentiment: "Positive",
-    confidence: 94,
-    impact: "High",
-    projection: "Expect a gradual recovery toward 24,500 levels in the coming week.",
-    category: "Markets",
-    topics: ["Market Recovery", "Nifty", "May 1"],
-    source: "Financial Express",
-    date: "2026-05-01T08:00:00Z",
-    url: "https://financialexpress.com/may-recovery-2026"
+    projection: "Companies with reserved compute capacity will outperform; others will face R&D delays.",
+    topics: ['AI Chips', 'NVIDIA', 'Sovereign AI'],
+    date: '2026-03-20T11:00:00Z',
+    url: 'https://theverge.com/ai-shortage-2026'
   }
 ];
 
