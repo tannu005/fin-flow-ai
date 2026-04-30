@@ -96,6 +96,7 @@ const SummaryCard = ({ article, index = 0, recruiterMode = false, meta = {}, isS
       </div>
 
       {/* ── Footer Info ── */}
+      <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
           <Server size={12} /> {article.source}
         </div>
