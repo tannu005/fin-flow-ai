@@ -133,21 +133,38 @@ export const HISTORICAL_TIMELINE_2026 = [
   { date: "Jan 2026", nifty: 26146, btc: 85400, event: "New Year Bullish Peak", sentiment: "Greed" },
   { date: "Feb 2026", nifty: 25200, btc: 72000, event: "Middle East Conflict Begins", sentiment: "Caution" },
   { date: "Mar 2026", nifty: 24800, btc: 66000, event: "Energy Crisis Blockade", sentiment: "Fear" },
-  { date: "Apr 2026", nifty: 24200, btc: 70000, event: "Supply Chain Disruptions", sentiment: "Caution" },
-  { date: "Apr 30, 2026", nifty: 23925, btc: 74012, event: "Oil Shock at $125/bbl", sentiment: "Fear" },
-  { date: "May 1, 2026", nifty: 24150, btc: 75200, event: "Market Stabilization Attempt", sentiment: "Neutral" }
+  { date: "Apr 2026", nifty: 24200, btc: 75000, event: "Supply Chain Disruptions", sentiment: "Caution" },
+  { date: "Apr 30, 2026", nifty: 23925, btc: 77012, event: "Oil Shock at $125/bbl", sentiment: "Fear" },
+  { date: "May 1, 2026", nifty: 24150, btc: 78200, event: "Market Stabilization Attempt", sentiment: "Neutral" }
 ];
 
 export const LIVE_INDICES = [
   { symbol: "S&P 500", value: "5,917.30", change: "+0.85%", up: true, volatility: [40, 45, 42, 48, 55, 52, 60] },
   { symbol: "NASDAQ", value: "18,915.20", change: "+1.12%", up: true, volatility: [30, 35, 32, 45, 40, 50, 58] },
-  { symbol: "BTC", value: "$74,012", change: "+0.54%", up: true, volatility: [20, 50, 30, 70, 40, 80, 60] },
+  { symbol: "BTC", value: "$77,012", change: "+0.54%", up: true, volatility: [20, 50, 30, 70, 40, 80, 60] },
+  { symbol: "GOLD", value: "$4,512.50", change: "+1.24%", up: true, volatility: [10, 15, 12, 18, 20, 22, 25] },
   { symbol: "NIFTY 50", value: "23,925", change: "-0.74%", up: false, volatility: [60, 58, 62, 55, 57, 50, 52] },
   { symbol: "CRUDE OIL", value: "$121.90", change: "+4.25%", up: true, volatility: [40, 42, 41, 44, 43, 45, 46] }
 ];
 
+export const RECRUITER_DATA = {
+  talentDemand: [
+    { sector: 'AI Engineering', demand: 'Extreme', hiring: 85, layoffs: 5 },
+    { sector: 'Blockchain', demand: 'High', hiring: 45, layoffs: 12 },
+    { sector: 'Cybersecurity', demand: 'Stable', hiring: 30, layoffs: 2 },
+    { sector: 'Traditional Fin', demand: 'Declining', hiring: 10, layoffs: 45 }
+  ],
+  topHiringFirms: ['SovereignAI India', 'Ethos Labs', 'Nexus compute', 'Bharat Tech'],
+  layoffHeatmap: {
+    Tech: 12500,
+    Finance: 8400,
+    Crypto: 1200,
+    Retail: 4500
+  }
+};
+
 export const SECTOR_ANALYSIS = {
   Economy: "Strait of Hormuz tensions are the #1 credit risk for 2026. Global inflation remains steady at 3.1% but energy costs are a wildcard. Focus on Energy producers (Reliance/ONGC).",
   Tech: "AI is no longer augmenting—it's replacing. 20% of Q1 layoffs were AI-attributed. Focus on 'Sovereign AI' stocks like NVIDIA/Microsoft.",
-  Crypto: "Bitcoin is acting as 'Digital Gold' today, holding $74k despite the stock market sell-off. Watch the $72k structural support level."
+  Crypto: "Bitcoin is acting as 'Digital Gold' today, holding $77k despite the stock market sell-off. Watch the $75k structural support level."
 };

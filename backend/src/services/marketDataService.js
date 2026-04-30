@@ -8,9 +8,9 @@ const FALLBACK_DATA = {
   indices: [
     { symbol: "S&P 500", value: "5,917.30", change: "+0.85%", up: true, volatility: [40, 45, 42, 48, 55, 52, 60] },
     { symbol: "NASDAQ", value: "18,915.20", change: "+1.12%", up: true, volatility: [30, 35, 32, 45, 40, 50, 58] },
-    { symbol: "BTC", value: "$97,420", change: "+2.45%", up: true, volatility: [20, 50, 30, 70, 40, 80, 60] },
-    { symbol: "GOLD", value: "$2,642.10", change: "-0.15%", up: false, volatility: [60, 58, 62, 55, 57, 50, 52] },
-    { symbol: "DOW J", value: "43,815.40", change: "+0.45%", up: true, volatility: [40, 42, 41, 44, 43, 45, 46] }
+    { symbol: "BTC", value: "$77,012", change: "+2.45%", up: true, volatility: [20, 50, 30, 70, 40, 80, 60] },
+    { symbol: "GOLD", value: "$4,512.50", change: "+1.24%", up: true, volatility: [10, 15, 12, 18, 20, 22, 25] },
+    { symbol: "NIFTY 50", value: "23,925", change: "-0.74%", up: false, volatility: [60, 58, 62, 55, 57, 50, 52] }
   ],
   crypto: [
     { name: "Bitcoin", symbol: "BTC", price: 97420.50, change24h: 2.45, status: "Bullish" },

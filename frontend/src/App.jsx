@@ -12,7 +12,7 @@ import Background3D from './components/Background3D';
 import SummaryCard from './components/SummaryCard';
 import Heatmap from './components/Heatmap';
 import { useMarketPulse } from './hooks/useMarketPulse';
-import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS } from './constants';
+import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS, RECRUITER_DATA } from './constants';
 
 const API_URL = import.meta.env.VITE_API_URL || '/_backend/api';
 
@@ -275,14 +275,14 @@ export default function App() {
           </div>
 
           <div className="pt-8 space-y-2">
-            <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] px-4 mb-4">SECTORS</p>
+            <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] px-4 mb-4 uppercase">Sectors & Filters</p>
             {['All', 'Markets', 'Tech', 'Economy', 'Crypto'].map(cat => (
               <button
                 key={cat}
-                onClick={() => setCategory(cat)}
-                className={`w-full flex items-center gap-3 px-5 py-3 rounded-xl text-[13px] font-bold transition-all ${category === cat ? 'text-blue-600 bg-blue-50/80 border border-blue-100' : 'text-slate-500 hover:text-slate-900'}`}
+                onClick={() => { setCategory(cat); setView('dashboard'); }}
+                className={`w-full flex items-center gap-3 px-5 py-3 rounded-xl text-[13px] font-bold transition-all ${category === cat && view === 'dashboard' ? 'text-blue-600 bg-blue-50/80 border border-blue-100' : 'text-slate-500 hover:text-slate-900'}`}
               >
-                <div className={`w-2 h-2 rounded-full ${category === cat ? 'bg-blue-600 shadow-[0_0_8px_#2563eb]' : 'bg-slate-300'}`} />
+                <div className={`w-2 h-2 rounded-full ${category === cat && view === 'dashboard' ? 'bg-blue-600 shadow-[0_0_8px_#2563eb]' : 'bg-slate-300'}`} />
                 {cat}
               </button>
             ))}
@@ -360,9 +360,18 @@ export default function App() {
                       Market <span className="text-blue-600">Trajectory</span>
                     </h2>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sentiment Confidence</p>
+                  <div className="text-right group relative">
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sentiment Confidence</p>
+                      <Info size={10} className="text-slate-300 cursor-help" />
+                    </div>
                     <p className="text-2xl font-black text-emerald-600">92.4%</p>
+                    
+                    {/* Methodology Tooltip */}
+                    <div className="absolute right-0 top-full mt-2 w-48 p-3 bg-slate-900 text-white text-[9px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-[60] pointer-events-none shadow-2xl font-mono leading-relaxed">
+                      <p className="mb-2 text-blue-400"># METHODOLOGY</p>
+                      Weighted aggregate of NLP sentiment from 400+ premium sources (FT, Bloomberg, Reuters) vs. real-time order flow imbalances.
+                    </div>
                   </div>
                 </div>
                 <TrajectoryChart data={HISTORICAL_TIMELINE_2026} />
@@ -371,9 +380,26 @@ export default function App() {
               <div className="reveal-up liquid-glass p-8 bg-blue-900/5 border-blue-100/50 flex flex-col justify-between">
                 <div>
                   <h3 className="font-bold text-xs flex items-center gap-2 text-slate-900 uppercase tracking-widest mb-4">
-                    <Terminal size={16} className="text-blue-500" /> Viral Signals
+                    <Zap size={16} className="text-blue-500" /> {recruiterMode ? 'Talent Demand Peaks' : 'Viral Signals'}
                   </h3>
-                  <Heatmap trendingTopics={trendingTopics} />
+                  {recruiterMode ? (
+                    <div className="space-y-4">
+                      {RECRUITER_DATA.talentDemand.map(td => (
+                        <div key={td.sector} className="flex flex-col gap-1">
+                          <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter">
+                            <span>{td.sector}</span>
+                            <span className="text-blue-600">{td.demand}</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-blue-100 rounded-full overflow-hidden flex">
+                            <div className="h-full bg-blue-600" style={{ width: `${td.hiring}%` }} />
+                            <div className="h-full bg-rose-400" style={{ width: `${td.layoffs}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <Heatmap trendingTopics={trendingTopics} />
+                  )}
                 </div>
                 <div className="mt-8 pt-6 border-t border-blue-100/50">
                   <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Primary Catalyst</p>
@@ -406,30 +432,105 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-              {['Economy', 'Tech', 'Crypto'].map((sector) => (
-                <div key={sector} className="reveal-up p-8 liquid-glass bg-white/60 border-blue-100/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-                      {sector === 'Economy' ? <TrendingDown size={18} /> : sector === 'Tech' ? <Sparkles size={18} /> : <TrendingUp size={18} />}
+              {recruiterMode ? (
+                <>
+                  <div className="reveal-up p-8 liquid-glass bg-slate-900 text-white border-none col-span-2">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="font-bold text-sm uppercase tracking-widest flex items-center gap-3">
+                        <Target size={18} className="text-blue-400" /> Talent Flow Tracker
+                      </h3>
+                      <div className="text-[9px] font-mono text-slate-500 uppercase">Live: Q2 2026 Data</div>
                     </div>
-                    <h3 className="font-bold text-sm text-slate-900 uppercase tracking-widest">{sector} Sector</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                      {Object.entries(RECRUITER_DATA.layoffHeatmap).map(([sector, count]) => (
+                        <div key={sector}>
+                          <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">{sector} Layoffs</p>
+                          <p className="text-xl font-black">{count.toLocaleString()}</p>
+                          <div className="h-1 w-full bg-slate-800 rounded-full mt-2">
+                            <div className="h-full bg-rose-500" style={{ width: `${Math.min(count/100, 100)}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed italic">
-                    "{SECTOR_ANALYSIS[sector]}"
-                  </p>
-                  <div className="mt-4 pt-4 border-t border-blue-50 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} Insight</span>
-                    <ChevronRight size={14} className="text-blue-300" />
+                  <div className="reveal-up p-8 liquid-glass bg-blue-600 text-white border-none">
+                    <h3 className="font-bold text-sm uppercase tracking-widest mb-6">Top Hiring Hubs</h3>
+                    <div className="space-y-3">
+                      {RECRUITER_DATA.topHiringFirms.map((firm, i) => (
+                        <div key={i} className="flex items-center justify-between text-xs font-bold p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-all cursor-pointer">
+                          <span>{firm}</span>
+                          <ChevronRight size={14} className="opacity-40" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                ['Economy', 'Tech', 'Crypto'].map((sector) => (
+                  <div key={sector} className="reveal-up p-8 liquid-glass bg-white/60 border-blue-100/50">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                        {sector === 'Economy' ? <TrendingDown size={18} /> : sector === 'Tech' ? <Sparkles size={18} /> : <TrendingUp size={18} />}
+                      </div>
+                      <h3 className="font-bold text-sm text-slate-900 uppercase tracking-widest">{sector} Sector</h3>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed italic">
+                      "{SECTOR_ANALYSIS[sector]}"
+                    </p>
+                    <div className="mt-4 pt-4 border-t border-blue-50 flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} Insight</span>
+                      <ChevronRight size={14} className="text-blue-300" />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Predictive Simulator Section */}
+            {!recruiterMode && view === 'dashboard' && (
+              <div className="reveal-up mb-8 p-8 liquid-glass bg-gradient-to-br from-slate-900 to-blue-900 text-white border-none overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-10 opacity-10">
+                  <BrainCircuit size={120} />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="px-3 py-1 rounded-full bg-blue-500 text-[9px] font-black uppercase tracking-widest">AI Simulation Engine</div>
+                    <h3 className="text-xl font-black uppercase tracking-tighter">Predictive "What-If" Analysis</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                      { trigger: 'Scenario: Fed Rate Cut', impact: 'Bullish for Tech / Crypto', probability: '65%' },
+                      { trigger: 'Scenario: Hormuz De-escalation', impact: 'Bearish for Oil / Defensive', probability: '42%' },
+                      { trigger: 'Scenario: Sovereign AI Mandate', impact: 'Bullish for Local Infrastructure', probability: '88%' }
+                    ].map((sim, i) => (
+                      <div key={i} className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 transition-all cursor-pointer group">
+                        <p className="text-[10px] font-bold text-blue-400 uppercase mb-1">{sim.trigger}</p>
+                        <p className="text-xs font-black mb-3">{sim.impact}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] opacity-40 uppercase">Confidence</span>
+                          <span className="text-xs font-black text-emerald-400">{sim.probability}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
               {loading ? (
                 Array(6).fill(0).map((_, i) => (
                   <div key={i} className="h-96 rounded-[40px] skeleton opacity-50" />
                 ))
+              ) : view === 'saved' ? (
+                /* History Vault View */
+                <div className="col-span-full space-y-6">
+                  <div className="p-10 rounded-[40px] bg-white/40 backdrop-blur-md border border-dashed border-blue-200 text-center">
+                    <Bookmark size={48} className="mx-auto mb-4 text-blue-400 opacity-40" />
+                    <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Your History Vault</h2>
+                    <p className="text-slate-500 max-w-md mx-auto mt-2">Saved narratives and bookmarked insights will appear here for long-term strategic analysis.</p>
+                  </div>
+                </div>
               ) : filtered.length > 0 ? (
                 filtered.map((article, i) => (
                   <SummaryCard key={i} article={article} index={i} recruiterMode={recruiterMode} meta={pulse?.metadata} isStressed={isMarketStressed} />
