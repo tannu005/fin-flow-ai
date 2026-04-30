@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import gsap from 'gsap';
-import { 
-  Search, RefreshCw, BarChart3, LayoutDashboard, Bookmark, 
+import {
+  Search, RefreshCw, BarChart3, LayoutDashboard, Bookmark,
   Download, FileText, Activity, TrendingUp, TrendingDown,
   ChevronRight, Zap, Code, Terminal, Bell, Filter, Grid, List, Sparkles,
   Calendar, Info, BrainCircuit, Target, Database, Minus, X, BarChart2,
@@ -14,7 +14,7 @@ import Heatmap from './components/Heatmap';
 import { useMarketPulse } from './hooks/useMarketPulse';
 import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS } from './constants';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 /* ── Sparkline Helper ── */
 const Sparkline = ({ data, color, width = 70, height = 30 }) => {
@@ -90,7 +90,7 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [view, setView] = useState('dashboard');
   const [selectedHistory, setSelectedHistory] = useState('Today');
-  
+
   const { pulse, health, manualSync, isValidating } = useMarketPulse();
 
   const trendingTopics = [
@@ -104,10 +104,10 @@ export default function App() {
 
   useEffect(() => {
     const lastSync = localStorage.getItem('last_sync_date');
-    const today = "2026-04-30"; 
+    const today = "2026-04-30";
 
     if (lastSync !== today) {
-      handleScrape(); 
+      handleScrape();
       localStorage.setItem('last_sync_date', today);
     }
     gsap.from('.reveal-up', { y: 30, stagger: 0.1, duration: 1, ease: 'expo.out' });
@@ -132,10 +132,12 @@ export default function App() {
 
   const handleHistorySelect = (date) => {
     setSelectedHistory(date);
-    gsap.to('.dashboard-content', { opacity: 0, y: 10, duration: 0.3, onComplete: () => {
-      console.log(`[RECRUITER MODE]: Swapped state to ${date} data.`);
-      gsap.to('.dashboard-content', { opacity: 1, y: 0, duration: 0.5 });
-    }});
+    gsap.to('.dashboard-content', {
+      opacity: 0, y: 10, duration: 0.3, onComplete: () => {
+        console.log(`[RECRUITER MODE]: Swapped state to ${date} data.`);
+        gsap.to('.dashboard-content', { opacity: 1, y: 0, duration: 0.5 });
+      }
+    });
   };
 
   const handleScrape = async () => {
@@ -163,7 +165,7 @@ export default function App() {
     }, 800);
   };
 
-  const filtered = summaries.filter(s => 
+  const filtered = summaries.filter(s =>
     (category === 'All' || s.category === category) &&
     (s.headline.toLowerCase().includes(search.toLowerCase()) || s.summary.toLowerCase().includes(search.toLowerCase()))
   );
@@ -176,9 +178,9 @@ export default function App() {
   return (
     <div className="flex h-screen overflow-hidden text-slate-900 bg-gradient-to-b from-slate-50 via-blue-50 to-white font-inter">
       <Background3D color="#1e40af" />
-      
+
       {/* ... (sidebar) ... */}
-      
+
       <aside className="w-72 flex flex-col shrink-0 z-50 bg-white/80 backdrop-blur-2xl border-right border-blue-100/50 shadow-2xl">
         <div className="p-8 pb-4 flex items-center gap-3">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg shadow-blue-900/20">
@@ -196,8 +198,8 @@ export default function App() {
             { id: 'dashboard', label: 'Market Pulse', icon: LayoutDashboard },
             { id: 'saved', label: 'History Vault', icon: Calendar },
           ].map(item => (
-            <button 
-              key={item.id} 
+            <button
+              key={item.id}
               onClick={() => setView(item.id)}
               className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${view === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:text-slate-900 hover:bg-blue-50'}`}
             >
@@ -206,25 +208,25 @@ export default function App() {
           ))}
 
           <div className="pt-8 space-y-2 px-4">
-             <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-4">TIMELINE</p>
-             <div className="relative group">
-                <select 
-                  value={selectedHistory}
-                  onChange={(e) => handleHistorySelect(e.target.value)}
-                  className="w-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold py-3 px-4 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="Today">April 30 (Today)</option>
-                  <option value="Jan 2026">Jan 2026</option>
-                </select>
-                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none" />
-             </div>
+            <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-4">TIMELINE</p>
+            <div className="relative group">
+              <select
+                value={selectedHistory}
+                onChange={(e) => handleHistorySelect(e.target.value)}
+                className="w-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold py-3 px-4 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="Today">April 30 (Today)</option>
+                <option value="Jan 2026">Jan 2026</option>
+              </select>
+              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none" />
+            </div>
           </div>
 
           <div className="pt-8 space-y-2">
             <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] px-4 mb-4">SECTORS</p>
             {['All', 'Markets', 'Tech', 'Economy', 'Crypto'].map(cat => (
-              <button 
-                key={cat} 
+              <button
+                key={cat}
                 onClick={() => setCategory(cat)}
                 className={`w-full flex items-center gap-3 px-5 py-3 rounded-xl text-[13px] font-bold transition-all ${category === cat ? 'text-blue-600 bg-blue-50/80 border border-blue-100' : 'text-slate-500 hover:text-slate-900'}`}
               >
@@ -236,20 +238,20 @@ export default function App() {
         </nav>
 
         <div className="p-6 border-t border-blue-50">
-           <button 
-             onClick={() => setRecruiterMode(!recruiterMode)}
-             className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all shadow-sm ${recruiterMode ? 'bg-slate-900 text-white shadow-xl' : 'bg-white border border-blue-100 text-slate-600 hover:bg-blue-50'}`}
-           >
-             <div className="flex items-center gap-3">
-               <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${recruiterMode ? 'bg-blue-500' : 'bg-slate-100'}`}>
-                 <Code size={16} />
-               </div>
-               <span className="text-[11px] font-black tracking-widest uppercase">Recruiter Mode</span>
-             </div>
-             <div className={`w-8 h-4 rounded-full relative transition-colors ${recruiterMode ? 'bg-blue-500' : 'bg-slate-300'}`}>
-               <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${recruiterMode ? 'right-1' : 'left-1'}`} />
-             </div>
-           </button>
+          <button
+            onClick={() => setRecruiterMode(!recruiterMode)}
+            className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all shadow-sm ${recruiterMode ? 'bg-slate-900 text-white shadow-xl' : 'bg-white border border-blue-100 text-slate-600 hover:bg-blue-50'}`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${recruiterMode ? 'bg-blue-500' : 'bg-slate-100'}`}>
+                <Code size={16} />
+              </div>
+              <span className="text-[11px] font-black tracking-widest uppercase">Recruiter Mode</span>
+            </div>
+            <div className={`w-8 h-4 rounded-full relative transition-colors ${recruiterMode ? 'bg-blue-500' : 'bg-slate-300'}`}>
+              <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${recruiterMode ? 'right-1' : 'left-1'}`} />
+            </div>
+          </button>
         </div>
       </aside>
 
@@ -257,26 +259,26 @@ export default function App() {
         <header className="h-20 px-10 flex items-center gap-8 shrink-0 bg-white/60 backdrop-blur-xl border-b border-blue-100/50">
           <div className="flex-1 relative max-w-xl">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Query Market Narratives..." 
+            <input
+              type="text"
+              placeholder="Query Market Narratives..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-white/80 border border-blue-100/50 py-3.5 pl-12 pr-4 rounded-2xl text-sm font-medium focus:outline-none focus:border-blue-400 transition-all shadow-sm" 
+              className="w-full bg-white/80 border border-blue-100/50 py-3.5 pl-12 pr-4 rounded-2xl text-sm font-medium focus:outline-none focus:border-blue-400 transition-all shadow-sm"
             />
           </div>
 
           <div className="flex items-center gap-6">
-             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-blue-100/50 shadow-sm transition-all hover:shadow-md" title={isMarketStressed ? 'Geopolitical Stress Detected' : 'All Systems Operational'}>
-               <div className={`w-2 h-2 rounded-full ${!isMarketStressed ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-rose-500 shadow-[0_0_10px_#f43f5e]'} ${isValidating ? 'animate-pulse' : ''}`} />
-               <span className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase">{systemStatus}</span>
-             </div>
-             <button onClick={handleSync} disabled={isValidating} className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white border border-blue-100/50 text-blue-600 shadow-sm hover:shadow-md transition-all active:scale-95">
-               <RefreshCw size={20} className={`sync-icon ${isValidating ? 'animate-spin' : ''}`} />
-             </button>
-             <button onClick={handleScrape} disabled={loading} className="px-8 py-3.5 rounded-2xl bg-blue-600 text-white text-[13px] font-black tracking-wider uppercase shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all flex items-center gap-3">
-               <Zap size={16} className={loading ? 'animate-pulse text-amber-300' : ''} /> Live Scrape
-             </button>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-blue-100/50 shadow-sm transition-all hover:shadow-md" title={isMarketStressed ? 'Geopolitical Stress Detected' : 'All Systems Operational'}>
+              <div className={`w-2 h-2 rounded-full ${!isMarketStressed ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-rose-500 shadow-[0_0_10px_#f43f5e]'} ${isValidating ? 'animate-pulse' : ''}`} />
+              <span className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase">{systemStatus}</span>
+            </div>
+            <button onClick={handleSync} disabled={isValidating} className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white border border-blue-100/50 text-blue-600 shadow-sm hover:shadow-md transition-all active:scale-95">
+              <RefreshCw size={20} className={`sync-icon ${isValidating ? 'animate-spin' : ''}`} />
+            </button>
+            <button onClick={handleScrape} disabled={loading} className="px-8 py-3.5 rounded-2xl bg-blue-600 text-white text-[13px] font-black tracking-wider uppercase shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all flex items-center gap-3">
+              <Zap size={16} className={loading ? 'animate-pulse text-amber-300' : ''} /> Live Scrape
+            </button>
           </div>
         </header>
 
@@ -295,80 +297,80 @@ export default function App() {
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-               <div className="lg:col-span-2 reveal-up liquid-glass p-8 relative overflow-hidden bg-white/60">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/20 blur-3xl rounded-full -mr-20 -mt-20" />
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <p className="text-[10px] font-black text-blue-600 tracking-[0.3em] uppercase mb-2 flex items-center gap-2">
-                        <Sparkles size={12} /> 2026 Narrative Cluster
-                      </p>
-                      <h2 className="text-4xl font-black text-slate-900 leading-none">
-                        Market <span className="text-blue-600">Trajectory</span>
-                      </h2>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sentiment Confidence</p>
-                      <p className="text-2xl font-black text-emerald-600">92.4%</p>
-                    </div>
-                  </div>
-                  <TrajectoryChart data={HISTORICAL_TIMELINE_2026} />
-               </div>
-               
-               <div className="reveal-up liquid-glass p-8 bg-blue-900/5 border-blue-100/50 flex flex-col justify-between">
+              <div className="lg:col-span-2 reveal-up liquid-glass p-8 relative overflow-hidden bg-white/60">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/20 blur-3xl rounded-full -mr-20 -mt-20" />
+                <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="font-bold text-xs flex items-center gap-2 text-slate-900 uppercase tracking-widest mb-4">
-                      <Terminal size={16} className="text-blue-500" /> Viral Signals
-                    </h3>
-                    <Heatmap trendingTopics={trendingTopics} />
+                    <p className="text-[10px] font-black text-blue-600 tracking-[0.3em] uppercase mb-2 flex items-center gap-2">
+                      <Sparkles size={12} /> 2026 Narrative Cluster
+                    </p>
+                    <h2 className="text-4xl font-black text-slate-900 leading-none">
+                      Market <span className="text-blue-600">Trajectory</span>
+                    </h2>
                   </div>
-                  <div className="mt-8 pt-6 border-t border-blue-100/50">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Primary Catalyst</p>
-                    <div className="flex items-center gap-2 text-rose-600">
-                      <AlertTriangle size={14} />
-                      <span className="text-xs font-black uppercase">Energy Supply Shock</span>
-                    </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sentiment Confidence</p>
+                    <p className="text-2xl font-black text-emerald-600">92.4%</p>
                   </div>
-               </div>
+                </div>
+                <TrajectoryChart data={HISTORICAL_TIMELINE_2026} />
+              </div>
+
+              <div className="reveal-up liquid-glass p-8 bg-blue-900/5 border-blue-100/50 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-xs flex items-center gap-2 text-slate-900 uppercase tracking-widest mb-4">
+                    <Terminal size={16} className="text-blue-500" /> Viral Signals
+                  </h3>
+                  <Heatmap trendingTopics={trendingTopics} />
+                </div>
+                <div className="mt-8 pt-6 border-t border-blue-100/50">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Primary Catalyst</p>
+                  <div className="flex items-center gap-2 text-rose-600">
+                    <AlertTriangle size={14} />
+                    <span className="text-xs font-black uppercase">Energy Supply Shock</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-               {[
-                 { label: 'Volatility (VIX)', value: 19.25, trend: 'Up 10.4%', icon: Activity, color: 'text-rose-600', bg: 'bg-rose-50' },
-                 { label: 'AI Compute Demand', value: '92%', trend: 'New Record', icon: BrainCircuit, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                 { label: 'Fed Countdown', value: '12 Days', trend: 'Next: Rate Hold', icon: Target, color: 'text-amber-600', bg: 'bg-amber-50' },
-                 { label: 'Fear & Greed Index', value: 78, trend: 'Extreme Greed', icon: BarChart2, color: 'text-rose-600', bg: 'bg-rose-50' }
-               ].map((stat, i) => (
-                 <div key={i} className={`reveal-up bg-white/70 backdrop-blur-lg border p-6 rounded-[32px] shadow-sm hover:shadow-xl transition-all group border-blue-100/50 ${isMarketStressed && stat.label === 'Volatility (VIX)' ? 'border-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.15)]' : ''}`}>
-                   <div className="flex items-center justify-between mb-4">
-                     <div className={`w-10 h-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center`}>
-                       <stat.icon size={20} />
-                     </div>
-                     <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">{stat.trend}</span>
-                   </div>
-                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                   <p className="text-3xl font-black text-slate-900">{stat.value}</p>
-                 </div>
-               ))}
+              {[
+                { label: 'Volatility (VIX)', value: 19.25, trend: 'Up 10.4%', icon: Activity, color: 'text-rose-600', bg: 'bg-rose-50' },
+                { label: 'AI Compute Demand', value: '92%', trend: 'New Record', icon: BrainCircuit, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                { label: 'Fed Countdown', value: '12 Days', trend: 'Next: Rate Hold', icon: Target, color: 'text-amber-600', bg: 'bg-amber-50' },
+                { label: 'Fear & Greed Index', value: 78, trend: 'Extreme Greed', icon: BarChart2, color: 'text-rose-600', bg: 'bg-rose-50' }
+              ].map((stat, i) => (
+                <div key={i} className={`reveal-up bg-white/70 backdrop-blur-lg border p-6 rounded-[32px] shadow-sm hover:shadow-xl transition-all group border-blue-100/50 ${isMarketStressed && stat.label === 'Volatility (VIX)' ? 'border-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.15)]' : ''}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-10 h-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center`}>
+                      <stat.icon size={20} />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">{stat.trend}</span>
+                  </div>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                  <p className="text-3xl font-black text-slate-900">{stat.value}</p>
+                </div>
+              ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-               {['Economy', 'Tech', 'Crypto'].map((sector) => (
-                 <div key={sector} className="reveal-up p-8 liquid-glass bg-white/60 border-blue-100/50">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-                        {sector === 'Economy' ? <TrendingDown size={18} /> : sector === 'Tech' ? <Sparkles size={18} /> : <TrendingUp size={18} />}
-                      </div>
-                      <h3 className="font-bold text-sm text-slate-900 uppercase tracking-widest">{sector} Sector</h3>
+              {['Economy', 'Tech', 'Crypto'].map((sector) => (
+                <div key={sector} className="reveal-up p-8 liquid-glass bg-white/60 border-blue-100/50">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                      {sector === 'Economy' ? <TrendingDown size={18} /> : sector === 'Tech' ? <Sparkles size={18} /> : <TrendingUp size={18} />}
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed italic">
-                      "{SECTOR_ANALYSIS[sector]}"
-                    </p>
-                    <div className="mt-4 pt-4 border-t border-blue-50 flex items-center justify-between">
-                       <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">April 30 Insight</span>
-                       <ChevronRight size={14} className="text-blue-300" />
-                    </div>
-                 </div>
-               ))}
+                    <h3 className="font-bold text-sm text-slate-900 uppercase tracking-widest">{sector} Sector</h3>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed italic">
+                    "{SECTOR_ANALYSIS[sector]}"
+                  </p>
+                  <div className="mt-4 pt-4 border-t border-blue-50 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">April 30 Insight</span>
+                    <ChevronRight size={14} className="text-blue-300" />
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
