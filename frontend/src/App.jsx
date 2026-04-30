@@ -94,14 +94,14 @@ export default function App() {
 
   const { pulse, health, manualSync, isValidating } = useMarketPulse();
 
-  const trendingTopics = [
-    { topic: 'Oil Shock', count: 12 },
-    { topic: 'Sovereign AI', count: 9 },
-    { topic: 'Nifty Correction', count: 7 },
-    { topic: 'BTC Decoupling', count: 6 },
-    { topic: 'Credit Loss', count: 4 },
-    { topic: 'L3 Scaling', count: 3 }
-  ];
+  const trendingTopics = useMemo(() => {
+    const topics = {};
+    // Use search-filtered summaries to derive trending topics
+    filtered.forEach(s => {
+      s.topics?.forEach(t => topics[t] = (topics[t] || 0) + 1);
+    });
+    return Object.entries(topics).sort((a, b) => b[1] - a[1]).slice(0, 10).map(t => t[0]);
+  }, [filtered]);
 
   useEffect(() => {
     const lastSync = localStorage.getItem('last_sync_date');
@@ -181,9 +181,9 @@ export default function App() {
     setLogs([]);
     
     const initialLogs = [
-      { time: "17:10:01", msg: "📡 Initializing Chrome Headless (2026v4)..." },
-      { time: "17:10:02", msg: "🕵️ Bypassing Cloudflare Turnstile on NSE-India..." },
-      { time: "17:10:03", msg: "🔄 Rotating Proxy: Switch to Node-B (Secure EU Gateway)..." }
+      { time: new Date().toLocaleTimeString(), msg: "📡 Initializing Chrome Headless (2026v4)..." },
+      { time: new Date().toLocaleTimeString(), msg: "🕵️ Bypassing Cloudflare Turnstile on Bloomberg.com..." },
+      { time: new Date().toLocaleTimeString(), msg: "🔄 Rotating Proxy: Switch to Node-B (Secure EU Gateway)..." }
     ];
 
     let i = 0;
@@ -199,13 +199,16 @@ export default function App() {
     try {
       const res = await axios.post(`${API_URL}/scrape`);
       setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ✅ Scrape Success: ${res.data.count} articles processed.`]);
-      fetchData(selectedHistory);
+      // Fetch latest data to refresh UI
+      await fetchData(selectedHistory);
+      setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] 🚀 Dashboard Synchronized.`]);
     } catch (err) {
       setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ❌ Scrape Failed: ${err.message}`]);
     } finally {
       setTimeout(() => {
         setLoading(false);
-        setTimeout(() => setShowLogs(false), 3000);
+        // Don't close immediately so user sees success message
+        setTimeout(() => setShowLogs(false), 2000);
       }, 1000);
     }
   };
@@ -466,23 +469,26 @@ export default function App() {
                   </div>
                 </>
               ) : (
-                ['Economy', 'Tech', 'Crypto'].map((sector) => (
-                  <div key={sector} className="reveal-up p-8 liquid-glass bg-white/60 border-blue-100/50">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-                        {sector === 'Economy' ? <TrendingDown size={18} /> : sector === 'Tech' ? <Sparkles size={18} /> : <TrendingUp size={18} />}
+                ['Economy', 'Tech', 'Crypto'].map((sector) => {
+                  const isMatch = search && (sector.toLowerCase().includes(search.toLowerCase()) || SECTOR_ANALYSIS[sector].toLowerCase().includes(search.toLowerCase()));
+                  return (
+                    <div key={sector} className={`reveal-up p-8 liquid-glass transition-all duration-500 ${isMatch ? 'bg-blue-50 border-blue-400 shadow-[0_0_30px_rgba(37,99,235,0.25)] ring-2 ring-blue-400 scale-[1.02]' : 'bg-white/60 border-blue-100/50 opacity-80'}`}>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isMatch ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'}`}>
+                          {sector === 'Economy' ? <TrendingDown size={18} /> : sector === 'Tech' ? <Sparkles size={18} /> : <TrendingUp size={18} />}
+                        </div>
+                        <h3 className="font-bold text-sm text-slate-900 uppercase tracking-widest">{sector} Sector</h3>
                       </div>
-                      <h3 className="font-bold text-sm text-slate-900 uppercase tracking-widest">{sector} Sector</h3>
+                      <p className={`text-xs leading-relaxed italic transition-colors ${isMatch ? 'text-slate-900 font-medium' : 'text-slate-600'}`}>
+                        "{SECTOR_ANALYSIS[sector]}"
+                      </p>
+                      <div className="mt-4 pt-4 border-t border-blue-50 flex items-center justify-between">
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isMatch ? 'text-blue-600' : 'text-blue-400'}`}>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} Insight</span>
+                        <ChevronRight size={14} className={isMatch ? 'text-blue-600' : 'text-blue-300'} />
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed italic">
-                      "{SECTOR_ANALYSIS[sector]}"
-                    </p>
-                    <div className="mt-4 pt-4 border-t border-blue-50 flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} Insight</span>
-                      <ChevronRight size={14} className="text-blue-300" />
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 

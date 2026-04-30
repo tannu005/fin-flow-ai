@@ -1,131 +1,98 @@
 export const MOCK_ARTICLES = [
   {
     id: 'apr-30-1',
-    headline: "Oil Hits $125/bbl Amid Strait of Hormuz Blockade",
-    summary: "Global energy markets are in shock as the Strait of Hormuz remains blocked, disrupting 20% of world oil supply. Brent crude has surged to its highest level since 2022.",
+    headline: "Strait of Hormuz Blockade Triggers Energy Supply Shock",
+    summary: "Geopolitical fragmentation reaches a new peak as the Strait of Hormuz remains blocked, disrupting 20% of global oil flow. Markets are pricing in a prolonged regionalization of energy trade.",
     key_insights: [
       "10 million barrels/day supply shock identified.",
-      "Global inflation forecast revised to 5.8%.",
-      "Defensive sectors (Pharma, FMCG) showing relative strength."
+      "Global inflation forecast revised to 5.8% as regionalization costs rise.",
+      "Defensive sectors showing strength as fiscal sustainability concerns grow."
     ],
     sentiment: "Negative",
     confidence: 96,
     impact: "High",
-    projection: "Energy costs to tax corporate margins throughout Q2; expect continued pressure on Auto and Paint sectors.",
+    projection: "Energy costs to tax corporate margins through Q3; expect shift toward local energy production and lithium/copper securing.",
     category: "Economy",
-    topics: ["Oil", "Stagflation", "Geopolitics"],
+    topics: ["Geopolitics", "Energy Transition", "Regionalization"],
     source: "Bloomberg",
     date: "2026-04-30T16:45:00Z",
-    url: "https://www.bloomberg.com/news/articles/2026-04-30/oil-prices-skyrocket-strait-of-hormuz"
+    url: "https://www.google.com/search?q=Strait+of+Hormuz+Blockade+2026+energy+shock"
   },
   {
-    id: 'apr-30-2',
-    headline: "Nifty 50 Dips to 23,925; 8% Correction Since Jan Peak",
-    summary: "The Indian benchmark index has broken critical support levels as foreign institutional investors pull out amid global risk-off sentiment.",
+    id: 'crypto-inst-1',
+    headline: "Institutional Era Dawn: BlackRock Tokenizes $50B in RWAs",
+    summary: "Real-World Asset (RWA) tokenization moves from pilot to mainstream as BlackRock announces the full integration of its private equity funds on-chain.",
     key_insights: [
-      "VIX surged to 19.25, signaling extreme market fear.",
-      "Reliance and ONGC benefiting from energy price spike.",
-      "FII net outflows exceed $4B in April."
+      "24/7 liquidity unlocked for previously illiquid assets.",
+      "US legislation 'CLARITY Act' provides stablecoin regulatory shield.",
+      "Tokenized treasury systems becoming standard for B2B settlements."
     ],
-    sentiment: "Negative",
+    sentiment: "Positive",
+    confidence: 94,
+    impact: "Critical",
+    projection: "Institutional integration will drive BTC toward $100k despite retail volatility; focus on RWA protocols.",
+    category: "Crypto",
+    topics: ["RWA", "Institutional", "Tokenization"],
+    source: "Financial Times",
+    date: "2026-04-30T10:00:00Z",
+    url: "https://www.google.com/search?q=BlackRock+RWA+tokenization+institutional+crypto"
+  },
+  {
+    id: 'tech-ai-1',
+    headline: "AI Capex Shifts to Operational Productivity Gains",
+    summary: "NVIDIA reports that AI investment has shifted from speculative infrastructure build-out to operational spending focused on tangible productivity gains.",
+    key_insights: [
+      "Fortune 500 firms reporting 15% efficiency gain from AI agents.",
+      "Sovereign AI clouds in EU and India reaching full capacity.",
+      "AI x Crypto payment standards (x402) enabling autonomous agent trade."
+    ],
+    sentiment: "Positive",
     confidence: 92,
     impact: "High",
-    projection: "Support at 23,500 is critical; if broken, expect a slide toward 22,000 baseline.",
-    category: "Markets",
-    topics: ["Nifty 50", "VIX", "FII Outflows"],
-    source: "Reuters",
-    date: "2026-04-30T16:45:00Z",
-    url: "https://www.reuters.com/business/markets/nifty-india-correction-2026-04-30/"
+    projection: "The 'Fat App' thesis is playing out; value is shifting from chips to specialized user-facing AI applications.",
+    category: "Tech",
+    topics: ["AI Agents", "Productivity", "Sovereign AI"],
+    source: "Wired",
+    date: "2026-04-30T12:00:00Z",
+    url: "https://www.google.com/search?q=AI+Capex+Operational+Productivity+2026"
   },
   {
-    id: 'jan-1',
-    headline: 'January 2026: Nifty Hits All-Time High of 26,000',
-    summary: 'The new year starts with a massive rally as foreign investment pours into the Indian tech and green energy sectors.',
-    key_insights: ['FII inflows hit $5B in first week', 'Green energy index up 12%', 'Tech valuations reach new peaks'],
-    category: 'Markets',
-    source: 'Mint',
-    sentiment: 'Positive',
-    confidence: 94,
-    impact: "High",
-    projection: "The 26,000 level is a psychological barrier; consolidation is expected before the next leg up.",
-    topics: ['New Year Rally', 'Nifty', 'FII'],
-    date: '2026-01-15T09:00:00Z',
-    url: 'https://www.livemint.com/market/stock-market-news/nifty-reaches-26000-milestone-january-2026'
-  },
-  {
-    id: 'jan-2',
-    headline: 'Sovereign AI: India Announces National Compute Grid',
-    summary: 'The Indian government unveils a $10B plan to build a decentralized AI compute grid to reduce reliance on global cloud providers.',
-    key_insights: ['100,000 GPUs to be deployed by 2027', 'Focus on local language models', 'Partnerships with domestic tech giants'],
-    category: 'Tech',
-    source: 'Economic Times',
-    sentiment: 'Positive',
-    confidence: 91,
-    impact: "Medium",
-    projection: "Long-term bullish for Indian hardware and infrastructure providers.",
-    topics: ['AI', 'Sovereign AI', 'Infrastructure'],
-    date: '2026-01-20T11:00:00Z',
-    url: 'https://economictimes.indiatimes.com/tech/ites/india-ai-compute-grid-jan-2026'
-  },
-  {
-    id: 'feb-1',
-    headline: 'February 2026: Geopolitical Tensions Spark Energy Concerns',
-    summary: 'As tensions rise in the Middle East, oil prices begin their upward climb, putting pressure on global shipping and logistics.',
-    key_insights: ['Brent crude crosses $90/bbl', 'Shipping routes redirected', 'Inflation fears resurface'],
-    category: 'Economy',
-    source: 'Bloomberg',
-    sentiment: 'Negative',
-    confidence: 90,
-    impact: "Medium",
-    projection: "Expect increased volatility in energy-sensitive sectors like Auto and Aviation.",
-    topics: ['Oil', 'Geopolitics', 'Energy'],
-    date: '2026-02-10T14:00:00Z',
-    url: 'https://www.bloomberg.com/news/energy/2026-02-10/oil-prices-rise-geopolitics'
-  },
-  {
-    id: 'feb-2',
-    headline: 'Bitcoin Stabilizes at $85k After ETF Inflow Surge',
-    summary: 'Institutional adoption of Bitcoin continues as major pension funds allocate 1% of their portfolios to spot BTC ETFs.',
-    key_insights: ['ETF inflows hit $10B in Feb', 'Volatility decreases as liquidity improves', 'Correlation with tech stocks weakening'],
-    category: 'Crypto',
-    source: 'CoinDesk',
-    sentiment: 'Positive',
+    id: 'crypto-ai-1',
+    headline: "Autonomous AI Agents Adopt Crypto for Cross-Border Settlement",
+    summary: "A new era of 'Machine-to-Machine' finance emerges as autonomous AI agents begin using stablecoins for server-side resource settlement.",
+    key_insights: [
+      "Identity standard x402 enables agent-level cryptographic signatures.",
+      "Stablecoins cited as the 'Internet's Dollar' for AI trade.",
+      "DeFi protocols seeing 40% volume from non-human actors."
+    ],
+    sentiment: "Positive",
     confidence: 89,
     impact: "Medium",
-    projection: "Bitcoin is maturing into a standard asset class; expect slower but steadier growth.",
-    topics: ['Bitcoin', 'ETFs', 'Institutional Adoption'],
-    date: '2026-02-25T10:00:00Z',
-    url: 'https://www.coindesk.com/markets/2026-02-25/bitcoin-85k-institutional-inflow'
+    projection: "The intersection of AI and Crypto will create a self-sustaining economy independent of retail sentiment.",
+    category: "Crypto",
+    topics: ["AI x Crypto", "Stablecoins", "Autonomous Finance"],
+    source: "CoinDesk",
+    date: "2026-04-29T14:00:00Z",
+    url: "https://www.google.com/search?q=AI+agents+stablecoins+x402+settlement"
   },
   {
-    id: 'mar-1',
-    headline: 'March 2026: The Great AI Compute Shortage',
-    summary: 'Global demand for AI chips outstrips supply by 3:1, leading to project delays across major tech hubs.',
-    key_insights: ['Wait times for H200 chips reach 8 months', 'Sovereign AI clouds announced in EU', 'NVIDIA stock hits new records'],
-    category: 'Tech',
-    source: 'The Verge',
-    sentiment: 'Neutral',
-    confidence: 88,
-    impact: "High",
-    projection: "Companies with reserved compute capacity will outperform; others will face R&D delays.",
-    topics: ['AI Chips', 'NVIDIA', 'Sovereign AI'],
-    date: '2026-03-20T11:00:00Z',
-    url: 'https://www.theverge.com/2026/3/20/ai-compute-shortage-crisis'
-  },
-  {
-    id: 'mar-2',
-    headline: 'Fed Holds Rates at 5.5% as Inflation Remains Sticky',
-    summary: 'The Federal Reserve maintains its benchmark interest rate, citing persistent wage growth and high energy costs as barriers to cutting.',
-    key_insights: ['Job market remains robust', 'Energy prices adding 0.5% to CPI', 'Rate cuts unlikely before Q4'],
-    category: 'Economy',
-    source: 'CNBC',
-    sentiment: 'Neutral',
-    confidence: 93,
-    impact: "Medium",
-    projection: "High-for-longer regime continues; focus on cash-rich companies with low debt.",
-    topics: ['Federal Reserve', 'Inflation', 'Interest Rates'],
-    date: '2026-03-28T15:00:00Z',
-    url: 'https://www.cnbc.com/2026/03/28/fed-rate-decision-march-2026'
+    id: 'eco-frag-1',
+    headline: "Global Trade Fragmentation: The Death of Globalism?",
+    summary: "2026 marks the definitive shift toward regional trade blocs, with the US, EU, and BRICS+ formalizing independent fiscal and trade policies.",
+    key_insights: [
+      "Sovereign debt levels hit new highs globally.",
+      "Supply chains regionalizing to avoid geopolitical risk.",
+      "Fiscal sustainability is the primary concern for bond markets."
+    ],
+    sentiment: "Neutral",
+    confidence: 87,
+    impact: "Critical",
+    projection: "Expect a 'New Normal' growth of 3%; US outperformance to continue despite fragmentation.",
+    category: "Economy",
+    topics: ["Fragmentation", "Sovereign Debt", "Trade Blocs"],
+    source: "The Economist",
+    date: "2026-04-28T09:00:00Z",
+    url: "https://www.google.com/search?q=Global+Trade+Fragmentation+2026+regional+blocs"
   }
 ];
 
@@ -164,7 +131,7 @@ export const RECRUITER_DATA = {
 };
 
 export const SECTOR_ANALYSIS = {
-  Economy: "Strait of Hormuz tensions are the #1 credit risk for 2026. Global inflation remains steady at 3.1% but energy costs are a wildcard. Focus on Energy producers (Reliance/ONGC).",
-  Tech: "AI is no longer augmenting—it's replacing. 20% of Q1 layoffs were AI-attributed. Focus on 'Sovereign AI' stocks like NVIDIA/Microsoft.",
-  Crypto: "Bitcoin is acting as 'Digital Gold' today, holding $77k despite the stock market sell-off. Watch the $75k structural support level."
+  Economy: "2026 is defined by 'Structural Fragmentation'. Regionalization is the new globalism as trade blocs solidify. High sovereign debt and tight commodity markets (Copper, Lithium) are the primary fiscal risks. Focus on regional energy independence.",
+  Tech: "We are moving from AI Hype to 'Operational Productivity'. Investment is shifting from chips (Capex) to user-facing applications (Opex). Sovereign AI clouds are mandatory for national security. Focus on the 'Fat App' thesis.",
+  Crypto: "The Institutional Era has arrived. RWA tokenization (Stocks, Bonds) is now standard financial infrastructure. AI agents are transacting autonomously using stablecoins via cryptographic identity standards like x402. Focus on institutional-grade protocols."
 };
