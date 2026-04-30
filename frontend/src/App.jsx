@@ -14,7 +14,7 @@ import Heatmap from './components/Heatmap';
 import { useMarketPulse } from './hooks/useMarketPulse';
 import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS } from './constants';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = import.meta.env.VITE_API_URL || '/_backend/api';
 
 /* ── Sparkline Helper ── */
 const Sparkline = ({ data, color, width = 70, height = 30 }) => {
