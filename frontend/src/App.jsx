@@ -15,7 +15,9 @@ import Heatmap from './components/Heatmap';
 import { useMarketPulse } from './hooks/useMarketPulse';
 import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS, RECRUITER_DATA } from './constants';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
+  ? '/_backend/api'
+  : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api');
 
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 
@@ -24,7 +26,7 @@ const Sparkline = ({ data, color }) => {
   const chartData = data.map((v, i) => ({ value: v }));
   return (
     <div style={{ width: 70, height: 30 }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={70} minHeight={30}>
         <LineChart data={chartData}>
           <YAxis hide domain={['dataMin - 1', 'dataMax + 1']} />
           <Line 
@@ -166,7 +168,8 @@ export default function App() {
     let i = 0;
     const logInterval = setInterval(() => {
       if (i < initialLogs.length) {
-        setLogs(prev => [...prev, `[${initialLogs[i].time}] ${initialLogs[i].msg}`]);
+        const entry = initialLogs[i];
+        setLogs(prev => [...prev, `[${entry.time}] ${entry.msg}`]);
         i++;
       } else {
         clearInterval(logInterval);

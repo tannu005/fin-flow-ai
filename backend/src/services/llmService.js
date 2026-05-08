@@ -16,7 +16,7 @@ class LLMService {
 
     return await retry(async (bail) => {
       try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
         
         const prompt = `
           Analyze the following financial news article and provide a structured JSON response.

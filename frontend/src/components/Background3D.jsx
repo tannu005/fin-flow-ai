@@ -78,7 +78,7 @@ const Background3D = () => {
         <ambientLight intensity={1.5} />
         <DataParticles />
         <gridHelper
-          args={[100, 100, 'rgba(30, 64, 175, 0.1)', 'rgba(255, 255, 255, 0.5)']}
+          args={[100, 100, '#1e40af', '#ffffff']}
           position={[0, -3, -10]}
         />
       </Canvas>
