@@ -16,20 +16,21 @@ class LLMService {
 
     return await retry(async (bail) => {
       try {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         
         const prompt = `
           Analyze the following financial news article and provide a structured JSON response.
-          Article: ${article.content}
+          Article: ${article.content || article.headline}
           
           Required JSON fields:
           {
-            "headline": "A concise, catchy headline",
-            "summary": "A 2-3 sentence summary of the news",
-            "key_insights": ["Insight 1", "Insight 2", "Insight 3"],
-            "sentiment": "One of: Positive, Neutral, Negative",
-            "topics": ["topic1", "topic2", "topic3"],
-            "category": "One of: Finance, Markets, Economy, Tech, Crypto"
+            "headline": "A concise headline",
+            "summary": "A 2-3 sentence summary",
+            "key_insights": ["Insight 1", "Insight 2"],
+            "sentiment": "Positive" | "Neutral" | "Negative",
+            "topics": ["topic1"],
+            "category": "Markets",
+            "projection": "Future outlook"
           }
           
           Return ONLY the JSON.
@@ -37,28 +38,22 @@ class LLMService {
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        const text = response.text();
+        const text = response.text().trim();
         
-        // Clean the response (sometimes LLMs wrap JSON in code blocks)
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error('Failed to parse JSON from LLM response');
-        }
+        // Improved JSON cleaning
+        const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(cleanJson);
       } catch (error) {
         console.error('LLM Attempt failed:', error.message);
-        if (error.status === 429) {
-          throw error; // Retry on rate limit
+        if (error.message.includes('404')) {
+           console.warn('Model not found, falling back to mock for this article.');
+           return { ...article, summary: "AI Analysis unavailable for this signal.", key_insights: ["System fallback active"], sentiment: "Neutral" };
         }
-        bail(error); // Don't retry on other errors
+        throw error; 
       }
     }, {
-      retries: 3,
-      minTimeout: 1000,
-      onRetry: (error, attempt) => {
-        console.log(`Retrying LLM summarization (attempt ${attempt})...`);
-      }
+      retries: 2,
+      minTimeout: 500
     });
   }
 }

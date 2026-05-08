@@ -155,6 +155,8 @@ export default function App() {
   };
 
   const handleScrape = async () => {
+    alert("Live Scrape Initialized - Checking Backend Connection...");
+    console.log("[DEBUG] API_URL:", API_URL);
     setLoading(true);
     setShowLogs(true);
     setLogs([]);
@@ -543,25 +545,29 @@ export default function App() {
       </main>
 
       {showLogs && (
-        <div className="fixed bottom-10 right-10 w-[480px] bg-slate-900/95 backdrop-blur-3xl border border-white/10 rounded-[32px] shadow-2xl z-[100] overflow-hidden p-8 font-mono border-l-4 border-l-blue-500">
-          <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-blue-400 tracking-[0.3em] uppercase">Engine Execution Trace</span>
+        <div className="fixed inset-x-0 bottom-0 z-[9999] p-6 pointer-events-none">
+          <div className="max-w-xl ml-auto bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-6 pointer-events-auto overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <span className="text-[10px] font-bold text-blue-400 tracking-[0.3em] uppercase">Engine Trace</span>
+              </div>
+              <button onClick={() => setShowLogs(false)} className="text-slate-400 hover:text-white transition-colors">
+                <X size={16} />
+              </button>
             </div>
-            <button onClick={() => setShowLogs(false)} className="text-slate-500 hover:text-white transition-colors">
-              <X size={18} />
-            </button>
-          </div>
-          <div className="space-y-3 max-h-72 overflow-y-auto custom-scrollbar-mini">
-            {logs.map((log, i) => (
-              <p key={i} className="text-[11px] text-slate-300 leading-relaxed animate-in fade-in slide-in-from-left-4 duration-500">
-                <span className="text-blue-500/60 font-black mr-3">»</span>
-                {log}
-              </p>
-            ))}
-            <div className="flex items-center gap-2 text-[10px] text-blue-400 animate-pulse mt-4">
-              <RefreshCw size={10} className="animate-spin" /> Awaiting Signal Pipeline...
+            <div className="space-y-2 font-mono text-[11px] max-h-48 overflow-y-auto custom-scrollbar pr-2">
+              {logs.map((log, i) => (
+                <div key={i} className="text-slate-300 border-l border-white/10 pl-3 py-1 animate-in fade-in slide-in-from-left-2 duration-300">
+                  {log}
+                </div>
+              ))}
+              {loading && (
+                <div className="flex items-center gap-2 text-blue-400 pl-3 py-1 mt-2">
+                  <RefreshCw size={10} className="animate-spin" />
+                  <span className="animate-pulse tracking-widest text-[9px] font-bold uppercase">Processing live signals...</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
