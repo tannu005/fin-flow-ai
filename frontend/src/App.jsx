@@ -128,7 +128,12 @@ export default function App() {
 
   const isValidating = pulseValidating || summariesValidating;
 
-  const marketHistory = (marketHistoryRaw && marketHistoryRaw.length > 0) ? marketHistoryRaw : HISTORICAL_TIMELINE_2026;
+  const fallbackHistory = Array.from({length: 6}).map((_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (5 - i));
+    return { date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), btc: 65000, nifty: 24000 };
+  });
+
+  const marketHistory = (marketHistoryRaw && marketHistoryRaw.length > 0) ? marketHistoryRaw : fallbackHistory;
 
   const summaries = Array.isArray(summariesRaw) ? summariesRaw : MOCK_ARTICLES;
 
