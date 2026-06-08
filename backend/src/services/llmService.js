@@ -10,8 +10,15 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy-key");
 class LLMService {
   async summarize(article, isDemo = false) {
     if (isDemo || !process.env.GEMINI_API_KEY) {
-      console.log('Demo mode or no API key: returning mock summary');
-      return MOCK_ARTICLES[Math.floor(Math.random() * MOCK_ARTICLES.length)];
+      console.log('Demo mode or no API key: returning basic summary');
+      return {
+        headline: article.headline || "Market Update",
+        summary: article.content ? article.content.substring(0, 150) + "..." : "No summary available.",
+        key_insights: ["Scraped successfully", "LLM disabled (No API Key)"],
+        sentiment: "Neutral",
+        topics: ["General Market News"],
+        category: "Markets"
+      };
     }
 
     return await retry(async (bail) => {

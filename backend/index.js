@@ -9,6 +9,8 @@ const scraperService = require('./src/services/scraperService');
 const llmService = require('./src/services/llmService');
 const { MOCK_ARTICLES } = require('../shared/constants');
 
+let inMemorySummaries = [...MOCK_ARTICLES];
+
 dotenv.config();
 
 const app = express();
@@ -71,11 +73,11 @@ app.get('/api/summaries', async (req, res) => {
     const isConnected = mongoose.connection.readyState === 1;
     if (!process.env.MONGODB_URI || !isConnected) {
       if (!isConnected && process.env.MONGODB_URI) {
-        console.warn('MongoDB not connected. Falling back to mock data.');
+        console.warn('MongoDB not connected. Falling back to in-memory data.');
       }
-      let filtered = MOCK_ARTICLES;
+      let filtered = [...inMemorySummaries];
       if (date && date !== 'Today') {
-        filtered = MOCK_ARTICLES.filter(a => {
+        filtered = inMemorySummaries.filter(a => {
           const articleDate = new Date(a.date);
           const [monthStr, yearStr] = date.split(' ');
           if (monthStr && yearStr) {
@@ -178,7 +180,10 @@ app.post('/api/scrape', async (req, res) => {
           }
         }
       } else {
-        results.push({ ...newSummaryData, _id: Date.now() + Math.random() });
+        const item = { ...newSummaryData, _id: Date.now() + Math.random() };
+        results.push(item);
+        inMemorySummaries.unshift(item); // Add to in-memory cache
+        if (inMemorySummaries.length > 50) inMemorySummaries.pop(); // Keep array size manageable
       }
     }
 
@@ -203,7 +208,7 @@ app.get('/api/heatmap', async (req, res) => {
     let summaries = [];
     const isConnected = mongoose.connection.readyState === 1;
     if (!process.env.MONGODB_URI || !isConnected) {
-      summaries = MOCK_ARTICLES;
+      summaries = [...inMemorySummaries];
     } else {
       summaries = await Summary.find();
     }
