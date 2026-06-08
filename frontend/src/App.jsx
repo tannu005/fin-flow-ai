@@ -43,10 +43,21 @@ const Sparkline = ({ data, color }) => {
   );
 };
 
-/* ── Trajectory Chart (2026 Focus) ── */
+/* ── Trajectory Chart (Dynamic Data) ── */
 const TrajectoryChart = ({ data }) => {
   if (!data || data.length < 2) return <div className="h-32 flex items-center justify-center text-slate-400 text-xs">Insufficient trend data</div>;
-  const points = data.map((d, i) => `${(i / (data.length - 1)) * 400},${100 - ((d.nifty - 23000) / (27000 - 23000)) * 100}`).join(' ');
+  
+  const values = data.map(d => d.nifty || d.btc || 0);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = maxVal - minVal || 1;
+  
+  const points = data.map((d, i) => {
+    const val = d.nifty || d.btc || 0;
+    const y = 100 - ((val - minVal) / range) * 100;
+    return `${(i / (data.length - 1)) * 400},${y}`;
+  }).join(' ');
+
   return (
     <div className="relative w-full h-32 mt-6">
       <svg viewBox="0 0 400 100" className="w-full h-full drop-shadow-2xl">
@@ -60,11 +71,14 @@ const TrajectoryChart = ({ data }) => {
         <polyline fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" points={points} />
       </svg>
       <div className="flex justify-between mt-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
-        {HISTORICAL_TIMELINE_2026.map((point, i) => (
-          <span key={i} className={i === HISTORICAL_TIMELINE_2026.length - 1 ? "text-blue-600 animate-pulse" : ""}>
-            {point.date === "May 1, 2026" ? "MAY 01 (NEW)" : point.date.split(' ')[0].toUpperCase()}
-          </span>
-        ))}
+        {data.map((point, i) => {
+          const dateStr = point.date ? point.date.split(',')[0].split(' ').slice(0, 2).join(' ') : '---';
+          return (
+            <span key={i} className={i === data.length - 1 ? "text-blue-600 animate-pulse" : ""}>
+              {i === data.length - 1 ? `${dateStr.toUpperCase()} (NEW)` : dateStr.toUpperCase()}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -107,12 +121,14 @@ export default function App() {
   const [view, setView] = useState('dashboard');
   const [selectedHistory, setSelectedHistory] = useState('Today');
 
-  // Real-time Data Fetching with SWR
   const { data: pulse, mutate: mutatePulse, isValidating: pulseValidating } = useSWR(`${API_URL}/market-pulse`, fetcher, { refreshInterval: 30000 });
+  const { data: marketHistoryRaw } = useSWR(`${API_URL}/market-history`, fetcher);
   const { data: summariesRaw, mutate: mutateSummaries, isValidating: summariesValidating } = useSWR(`${API_URL}/summaries?date=${selectedHistory}`, fetcher);
   const { data: health } = useSWR(`${API_URL}/health`, fetcher);
 
   const isValidating = pulseValidating || summariesValidating;
+
+  const marketHistory = (marketHistoryRaw && marketHistoryRaw.length > 0) ? marketHistoryRaw : HISTORICAL_TIMELINE_2026;
 
   const summaries = Array.isArray(summariesRaw) ? summariesRaw : MOCK_ARTICLES;
 
@@ -250,7 +266,7 @@ export default function App() {
                 className="w-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold py-3 px-4 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="Today">Today ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})</option>
-                {HISTORICAL_TIMELINE_2026.slice(0, -1).reverse().map(h => (
+                {marketHistory.slice(0, -1).reverse().map(h => (
                   <option key={h.date} value={h.date}>{h.date}</option>
                 ))}
               </select>
@@ -370,7 +386,7 @@ export default function App() {
                     </div>
                   </div>
                 ) : (
-                  <TrajectoryChart data={HISTORICAL_TIMELINE_2026} />
+                  <TrajectoryChart data={marketHistory} />
                 )}
               </div>
 
