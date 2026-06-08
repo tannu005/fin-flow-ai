@@ -15,12 +15,11 @@ class ScraperService {
     for (const source of FINANCIAL_SOURCES) {
       try {
         const feed = await parser.parseURL(source.url);
-        // Take top 5 from each feed to process
-        const items = feed.items.slice(0, 5);
+        // Take top 3 from each feed to process quickly
+        const items = feed.items.slice(0, 3);
         
         for (const item of items) {
           try {
-            // Fetch actual article content
             const { data } = await axios.get(item.link, {
               headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -29,7 +28,6 @@ class ScraperService {
             });
             const $ = cheerio.load(data);
             
-            // Extract paragraphs
             let paragraphs = [];
             $('p').each((i, el) => {
               const text = $(el).text().trim();
@@ -42,14 +40,12 @@ class ScraperService {
             
             allArticles.push({
               headline: item.title,
-              content: content.substring(0, 2000), // Limit length to avoid overwhelming the LLM
+              content: content.substring(0, 2000), // limit length
               url: item.link,
               source: source.name,
               date: item.pubDate || new Date().toISOString()
             });
           } catch (err) {
-            console.warn(`Failed to fetch content for ${item.link}:`, err.message);
-            // Fallback to snippet
             allArticles.push({
               headline: item.title,
               content: item.contentSnippet || item.title,
@@ -64,10 +60,8 @@ class ScraperService {
       }
     }
     
-    // Sort by date descending
-    allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
-    return allArticles.slice(0, 10);
+    return allArticles;
   }
 }
 
-module.exports = new ScraperService();
+new ScraperService().fetchLatestNews().then(console.log);
