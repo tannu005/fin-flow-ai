@@ -83,7 +83,7 @@ const Background3D = () => {
         />
       </Canvas>
       {/* Light Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-blue-100/30"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-rose-950/30"></div>
     </div>
   );
 };

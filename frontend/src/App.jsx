@@ -45,7 +45,7 @@ const Sparkline = ({ data, color }) => {
 
 /* ── Trajectory Chart (Dynamic Data) ── */
 const TrajectoryChart = ({ data }) => {
-  if (!data || data.length < 2) return <div className="h-32 flex items-center justify-center text-slate-400 text-xs">Insufficient trend data</div>;
+  if (!data || data.length < 2) return <div className="h-32 flex items-center justify-center text-slate-600 text-xs">Insufficient trend data</div>;
   
   const values = data.map(d => d.nifty || d.btc || 0);
   const minVal = Math.min(...values);
@@ -63,18 +63,18 @@ const TrajectoryChart = ({ data }) => {
       <svg viewBox="0 0 400 100" className="w-full h-full drop-shadow-2xl">
         <defs>
           <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+            <stop offset="0%" stopColor="#e11d48" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#e11d48" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={`M 0 100 L ${points} L 400 100 Z`} fill="url(#chartGradient)" />
-        <polyline fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" points={points} />
+        <polyline fill="none" stroke="#e11d48" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" points={points} />
       </svg>
-      <div className="flex justify-between mt-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+      <div className="flex justify-between mt-2 text-[8px] font-black text-slate-600 uppercase tracking-widest">
         {data.map((point, i) => {
           const dateStr = point.date ? point.date.split(',')[0].split(' ').slice(0, 2).join(' ') : '---';
           return (
-            <span key={i} className={i === data.length - 1 ? "text-blue-600 animate-pulse" : ""}>
+            <span key={i} className={i === data.length - 1 ? "text-rose-900 animate-pulse" : ""}>
               {i === data.length - 1 ? `${dateStr.toUpperCase()} (NEW)` : dateStr.toUpperCase()}
             </span>
           );
@@ -86,15 +86,15 @@ const TrajectoryChart = ({ data }) => {
 
 /* ── Market Ticker ── */
 const MarketTicker = ({ pulse }) => (
-  <div className="border-b border-blue-100/50 overflow-hidden bg-white/60 backdrop-blur-md shrink-0 py-3 relative z-30">
+  <div className="border-b border-slate-200 overflow-hidden bg-white backdrop-blur-md shrink-0 py-3 relative z-30">
     <div className="animate-ticker flex whitespace-nowrap">
       {(pulse?.indices || LIVE_INDICES).map((idx, i) => (
         <div key={i} className="flex items-center gap-6 mx-10 shrink-0">
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">{idx.symbol}</span>
+            <span className="text-[10px] font-bold text-slate-600 tracking-wider uppercase">{idx.symbol}</span>
             <div className="flex items-center gap-2">
-              <span className="text-[14px] font-black text-slate-900">{idx.value}</span>
-              <span className={`text-[10px] font-bold flex items-center ${idx.up ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className="text-[14px] font-black text-slate-800">{idx.value}</span>
+              <span className={`text-[10px] font-bold flex items-center ${idx.up ? 'text-emerald-600' : 'text-rose-900'}`}>
                 {idx.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />} {idx.change}
               </span>
             </div>
@@ -103,7 +103,7 @@ const MarketTicker = ({ pulse }) => (
         </div>
       ))}
     </div>
-    <div className="absolute right-6 bottom-1 text-[9px] font-black text-blue-400 tracking-widest uppercase opacity-40">
+    <div className="absolute right-6 bottom-1 text-[9px] font-black text-rose-900 tracking-widest uppercase opacity-40">
       Live Pulse: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} | {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })} IST
     </div>
   </div>
@@ -120,11 +120,15 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState('dashboard');
   const [selectedHistory, setSelectedHistory] = useState('Today');
+  const [notification, setNotification] = useState(null);
 
   const { data: pulse, mutate: mutatePulse, isValidating: pulseValidating } = useSWR(`${API_URL}/market-pulse`, fetcher, { refreshInterval: 30000 });
   const { data: marketHistoryRaw } = useSWR(`${API_URL}/market-history`, fetcher);
   const { data: summariesRaw, mutate: mutateSummaries, isValidating: summariesValidating } = useSWR(`${API_URL}/summaries?date=${selectedHistory}`, fetcher);
   const { data: health } = useSWR(`${API_URL}/health`, fetcher);
+  const { data: intelligenceRaw } = useSWR(`${API_URL}/platform-intelligence`, fetcher, { refreshInterval: 60000 });
+
+  const intelligence = intelligenceRaw || { recruiterData: RECRUITER_DATA, sectorAnalysis: SECTOR_ANALYSIS };
 
   const isValidating = pulseValidating || summariesValidating;
 
@@ -176,16 +180,16 @@ export default function App() {
   };
 
   const handleScrape = async () => {
-    alert("Live Scrape Initialized - Checking Backend Connection...");
+    setNotification("Live Scrape Initialized - Checking Backend Connection...");
     console.log("[DEBUG] API_URL:", API_URL);
     setLoading(true);
     setShowLogs(true);
     setLogs([]);
     
     const initialLogs = [
-      { time: new Date().toLocaleTimeString(), msg: "📡 Initializing Chrome Headless (2026v4)..." },
-      { time: new Date().toLocaleTimeString(), msg: "🕵️ Bypassing Cloudflare Turnstile on Bloomberg.com..." },
-      { time: new Date().toLocaleTimeString(), msg: "🔄 Rotating Proxy: Switch to Node-B (Secure EU Gateway)..." }
+      { time: new Date().toLocaleTimeString(), msg: "📡 Initializing Engine (v4)..." },
+      { time: new Date().toLocaleTimeString(), msg: "🕵️ Bypassing security layers..." },
+      { time: new Date().toLocaleTimeString(), msg: "🔄 Rotating Proxy: Secure Gateway..." }
     ];
 
     let i = 0;
@@ -204,8 +208,12 @@ export default function App() {
       setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ✅ Scrape Success: ${res.data.count} articles processed.`]);
       mutateSummaries();
       setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] 🚀 Dashboard Synchronized.`]);
+      setNotification("✅ Scrape Success: Dashboard Synchronized.");
+      setTimeout(() => setNotification(null), 3000);
     } catch (err) {
       setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ❌ Scrape Failed: ${err.message}`]);
+      setNotification("❌ Scrape Failed. Check logs.");
+      setTimeout(() => setNotification(null), 3000);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -231,24 +239,32 @@ export default function App() {
   const systemStatus = isMarketStressed ? 'Degraded' : (health?.status || 'Active');
 
   return (
-    <div className="flex h-screen overflow-hidden text-slate-900 bg-gradient-to-b from-slate-50 via-blue-50 to-white font-inter">
-      <Background3D color="#1e40af" />
+    <div className="flex h-screen overflow-hidden text-slate-900 bg-slate-50 font-inter relative">
+      <Background3D color="#3f0f1f" />
+
+      {/* Luxury Notification Bar */}
+      {notification && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-full bg-white border border-slate-200 shadow-2xl backdrop-blur-xl flex items-center gap-3 animate-in slide-in-from-top-10 fade-in duration-300">
+          <div className="w-2 h-2 rounded-full bg-rose-800 animate-pulse" />
+          <span className="text-xs font-bold text-slate-800 tracking-wider uppercase">{notification}</span>
+        </div>
+      )}
 
       {/* ... (sidebar) ... */}
 
-      <aside className="w-72 flex flex-col shrink-0 z-50 bg-white/80 backdrop-blur-2xl border-right border-blue-100/50 shadow-2xl">
+      <aside className="w-72 flex flex-col shrink-0 z-50 bg-rose-950 border-r border-rose-900 shadow-2xl text-white">
         <div className="p-8 pb-4 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg shadow-blue-900/20">
-            <Sparkles size={22} className="text-white" />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-900 to-zinc-200 border border-slate-200 flex items-center justify-center shadow-lg shadow-rose-900/40">
+            <Sparkles size={22} className="text-rose-900" />
           </div>
           <div>
-            <h1 className="text-xl font-black tracking-tighter text-slate-900 leading-none">Fin-Flow <span className="text-blue-600">AI</span></h1>
-            <p className="text-[10px] font-bold text-blue-400 tracking-[0.2em] mt-1 uppercase">Intelligence v4</p>
+            <h1 className="text-xl font-black tracking-tighter text-white leading-none">Fin-Flow <span className="text-rose-300">AI</span></h1>
+            <p className="text-[10px] font-bold text-rose-200/80 tracking-[0.2em] mt-1 uppercase">Intelligence v4</p>
           </div>
         </div>
 
         <nav className="flex-1 px-4 py-8 space-y-2">
-          <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] px-4 mb-4">PLATFORM</p>
+          <p className="text-[10px] font-black text-slate-500 tracking-[0.2em] px-4 mb-4">PLATFORM</p>
           {[
             { id: 'dashboard', label: 'Market Pulse', icon: LayoutDashboard },
             { id: 'saved', label: 'History Vault', icon: Calendar },
@@ -256,56 +272,56 @@ export default function App() {
             <button
               key={item.id}
               onClick={() => setView(item.id)}
-              className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${view === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:text-slate-900 hover:bg-blue-50'}`}
+              className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${view === item.id ? 'bg-slate-50 text-rose-900 border border-rose-800/30 shadow-lg shadow-rose-900/20' : 'text-slate-600 hover:text-slate-800 hover:bg-white'}`}
             >
               <item.icon size={18} /> {item.label}
             </button>
           ))}
 
           <div className="pt-8 space-y-2 px-4">
-            <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-4">TIMELINE</p>
+            <p className="text-[10px] font-black text-slate-600 tracking-[0.2em] mb-4">TIMELINE</p>
             <div className="relative group">
               <select
                 value={selectedHistory}
                 onChange={(e) => handleHistorySelect(e.target.value)}
-                className="w-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold py-3 px-4 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full bg-white border border-slate-200 text-slate-700 text-xs font-bold py-3 px-4 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-800"
               >
                 <option value="Today">Today ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})</option>
                 {marketHistory.slice(0, -1).reverse().map(h => (
                   <option key={h.date} value={h.date}>{h.date}</option>
                 ))}
               </select>
-              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none" />
+              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-rose-900 pointer-events-none" />
             </div>
           </div>
 
           <div className="pt-8 space-y-2">
-            <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] px-4 mb-4 uppercase">Sectors & Filters</p>
+            <p className="text-[10px] font-black text-slate-600 tracking-[0.2em] px-4 mb-4 uppercase">Sectors & Filters</p>
             {['All', 'Markets', 'Tech', 'Economy', 'Crypto'].map(cat => (
               <button
                 key={cat}
                 onClick={() => { setCategory(cat); setView('dashboard'); }}
-                className={`w-full flex items-center gap-3 px-5 py-3 rounded-xl text-[13px] font-bold transition-all ${category === cat && view === 'dashboard' ? 'text-blue-600 bg-blue-50/80 border border-blue-100' : 'text-slate-500 hover:text-slate-900'}`}
+                className={`w-full flex items-center gap-3 px-5 py-3 rounded-xl text-[13px] font-bold transition-all ${category === cat && view === 'dashboard' ? 'text-slate-9000 bg-rose-900/10 border border-rose-900/20' : 'text-slate-500 hover:text-slate-800'}`}
               >
-                <div className={`w-2 h-2 rounded-full ${category === cat && view === 'dashboard' ? 'bg-blue-600 shadow-[0_0_8px_#2563eb]' : 'bg-slate-300'}`} />
+                <div className={`w-2 h-2 rounded-full ${category === cat && view === 'dashboard' ? 'bg-rose-800 shadow-[0_0_8px_#f59e0b]' : 'bg-slate-50'}`} />
                 {cat}
               </button>
             ))}
           </div>
         </nav>
 
-        <div className="p-6 border-t border-blue-50">
+        <div className="p-6 border-t border-slate-200">
           <button
             onClick={() => setRecruiterMode(!recruiterMode)}
-            className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all shadow-sm ${recruiterMode ? 'bg-slate-900 text-white shadow-xl' : 'bg-white border border-blue-100 text-slate-600 hover:bg-blue-50'}`}
+            className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all shadow-sm ${recruiterMode ? 'bg-rose-900 text-white shadow-xl shadow-rose-900/20' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
           >
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${recruiterMode ? 'bg-blue-500' : 'bg-slate-100'}`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${recruiterMode ? 'bg-rose-800' : 'bg-slate-50'}`}>
                 <Code size={16} />
               </div>
               <span className="text-[11px] font-black tracking-widest uppercase">Recruiter Mode</span>
             </div>
-            <div className={`w-8 h-4 rounded-full relative transition-colors ${recruiterMode ? 'bg-blue-500' : 'bg-slate-300'}`}>
+            <div className={`w-8 h-4 rounded-full relative transition-colors ${recruiterMode ? 'bg-rose-900' : 'bg-slate-50'}`}>
               <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${recruiterMode ? 'right-1' : 'left-1'}`} />
             </div>
           </button>
@@ -313,28 +329,28 @@ export default function App() {
       </aside>
 
       <main className="flex-1 flex flex-col relative z-40 overflow-hidden">
-        <header className="h-20 px-10 flex items-center gap-8 shrink-0 bg-white/60 backdrop-blur-xl border-b border-blue-100/50">
+        <header className="h-20 px-10 flex items-center gap-8 shrink-0 bg-white backdrop-blur-xl border-b border-slate-200">
           <div className="flex-1 relative max-w-xl">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               type="text"
               placeholder="Query Market Narratives..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-white/80 border border-blue-100/50 py-3.5 pl-12 pr-4 rounded-2xl text-sm font-medium focus:outline-none focus:border-blue-400 transition-all shadow-sm"
+              className="w-full bg-white border border-slate-200 py-3.5 pl-12 pr-4 rounded-2xl text-sm font-medium text-slate-800 placeholder-rose-300 focus:outline-none focus:border-rose-800 transition-all shadow-sm"
             />
           </div>
 
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-blue-100/50 shadow-sm transition-all hover:shadow-md" title={isMarketStressed ? 'Geopolitical Stress Detected' : 'All Systems Operational'}>
-              <div className={`w-2 h-2 rounded-full ${!isMarketStressed ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-rose-500 shadow-[0_0_10px_#f43f5e]'} ${isValidating ? 'animate-pulse' : ''}`} />
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm transition-all hover:shadow-md" title={isMarketStressed ? 'Geopolitical Stress Detected' : 'All Systems Operational'}>
+              <div className={`w-2 h-2 rounded-full ${!isMarketStressed ? 'bg-emerald-600 shadow-[0_0_10px_#10b981]' : 'bg-rose-800 shadow-[0_0_10px_#f43f5e]'} ${isValidating ? 'animate-pulse' : ''}`} />
               <span className="text-[10px] font-black text-slate-500 tracking-[0.2em] uppercase">{systemStatus}</span>
             </div>
-            <button onClick={handleSync} disabled={isValidating} className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white border border-blue-100/50 text-blue-600 shadow-sm hover:shadow-md transition-all active:scale-95">
+            <button onClick={handleSync} disabled={isValidating} className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white border border-slate-200 text-rose-900 shadow-sm hover:shadow-md transition-all active:scale-95">
               <RefreshCw size={20} className={`sync-icon ${isValidating ? 'animate-spin' : ''}`} />
             </button>
-            <button onClick={handleScrape} disabled={loading} className="px-8 py-3.5 rounded-2xl bg-blue-600 text-white text-[13px] font-black tracking-wider uppercase shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all flex items-center gap-3">
-              <Zap size={16} className={loading ? 'animate-pulse text-amber-300' : ''} /> Live Scrape
+            <button onClick={handleScrape} disabled={loading} className="px-8 py-3.5 rounded-2xl bg-rose-900 text-white text-[13px] font-black tracking-wider uppercase shadow-xl shadow-rose-900/40 hover:bg-rose-800 transition-all flex items-center gap-3">
+              <Zap size={16} className={loading ? 'animate-pulse text-slate-500' : ''} /> Live Scrape
             </button>
           </div>
         </header>
@@ -345,20 +361,20 @@ export default function App() {
           <div className="max-w-[1500px] mx-auto">
             {isMarketStressed && (
               <div className="reveal-up mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-between animate-pulse">
-                <div className="flex items-center gap-3 text-rose-600 font-bold text-sm">
+                <div className="flex items-center gap-3 text-rose-900 font-bold text-sm">
                   <AlertTriangle size={18} />
                   <span>MARKET STRESS ALERT: VIX at {VIX_VALUE}. Geopolitical instability detected.</span>
                 </div>
-                <div className="text-[10px] font-black text-rose-400 tracking-widest uppercase">High Volatility ({VIX_VALUE})</div>
+                <div className="text-[10px] font-black text-slate-500 tracking-widest uppercase">High Volatility ({VIX_VALUE})</div>
               </div>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <div className="lg:col-span-2 reveal-up liquid-glass p-8 relative overflow-hidden bg-white/60">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/20 blur-3xl rounded-full -mr-20 -mt-20" />
+              <div className="lg:col-span-2 reveal-up liquid-glass p-8 relative overflow-hidden bg-white">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 blur-3xl rounded-full -mr-20 -mt-20" />
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <p className="text-[10px] font-black text-blue-600 tracking-[0.3em] uppercase mb-2 flex items-center gap-2">
+                    <p className="text-[10px] font-black text-rose-900 tracking-[0.3em] uppercase mb-2 flex items-center gap-2">
                       <Sparkles size={12} /> {recruiterMode ? 'Talent Intelligence' : '2026 Narrative Cluster'}
                     </p>
                     <h2 className="text-4xl font-black text-slate-900 leading-none">
@@ -370,16 +386,16 @@ export default function App() {
                 {recruiterMode ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
                     <div className="space-y-4">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Top Hiring Sectors (Tech)</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Top Hiring Sectors (Tech)</p>
                       {['AI Engineering', 'Cybersecurity', 'Cloud Infra'].map((s, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                          <span className="text-sm font-bold">{s}</span>
-                          <span className="text-[10px] font-black text-blue-600">GROWTH +{35 - i * 5}%</span>
+                        <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                          <span className="text-sm font-bold text-slate-800">{s}</span>
+                          <span className="text-[10px] font-black text-rose-900">GROWTH +{35 - i * 5}%</span>
                         </div>
                       ))}
                     </div>
                     <div className="space-y-4">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Layoffs vs New Openings (AI)</p>
+                      <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Layoffs vs New Openings (AI)</p>
                       <div className="h-32 flex items-end gap-2">
                         <div className="flex-1 bg-rose-400 rounded-t-xl" style={{ height: '40%' }} title="Layoffs" />
                         <div className="flex-1 bg-emerald-400 rounded-t-xl" style={{ height: '85%' }} title="New Openings" />
@@ -395,24 +411,24 @@ export default function App() {
                 )}
               </div>
 
-              <div className="reveal-up liquid-glass p-8 bg-blue-900/5 border-blue-100/50 flex flex-col justify-between">
+              <div className="reveal-up liquid-glass p-8 bg-white border-slate-200 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-bold text-xs flex items-center gap-2 text-slate-900 uppercase tracking-widest mb-4">
-                    <Zap size={16} className="text-blue-500" /> {recruiterMode ? 'Trending Hot Skills' : 'Viral Signals'}
+                  <h3 className="font-bold text-xs flex items-center gap-2 text-slate-800 uppercase tracking-widest mb-4">
+                    <Zap size={16} className="text-slate-9000" /> {recruiterMode ? 'Trending Hot Skills' : 'Viral Signals'}
                   </h3>
                   {recruiterMode ? (
                     <div className="flex flex-wrap gap-2">
                       {['LLM Fine-tuning', 'PyTorch', 'Rust', 'RAG Ops', 'Vector DBs'].map(skill => (
-                        <span key={skill} className="px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold rounded-lg">{skill}</span>
+                        <span key={skill} className="px-3 py-1.5 bg-slate-50 text-slate-800 border border-slate-200 text-[10px] font-bold rounded-lg">{skill}</span>
                       ))}
                     </div>
                   ) : (
                     <Heatmap trendingTopics={trendingTopics} />
                   )}
                 </div>
-                <div className="mt-8 pt-6 border-t border-blue-100/50">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Platform Catalyst</p>
-                  <div className="flex items-center gap-2 text-blue-600">
+                <div className="mt-8 pt-6 border-t border-slate-200">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">Platform Catalyst</p>
+                  <div className="flex items-center gap-2 text-rose-900">
                     <Activity size={14} />
                     <span className="text-xs font-black uppercase">{recruiterMode ? 'AI Transformation Phase 2' : 'Geopolitical Stress'}</span>
                   </div>
@@ -422,19 +438,19 @@ export default function App() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[
-                { label: 'Volatility (VIX)', value: 19.25, trend: 'Up 10.4%', icon: Activity, color: 'text-rose-600', bg: 'bg-rose-50' },
-                { label: 'AI Compute Demand', value: '92%', trend: 'New Record', icon: BrainCircuit, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                { label: 'Fed Countdown', value: '12 Days', trend: 'Next: Rate Hold', icon: Target, color: 'text-amber-600', bg: 'bg-amber-50' },
-                { label: 'Fear & Greed Index', value: 78, trend: 'Extreme Greed', icon: BarChart2, color: 'text-rose-600', bg: 'bg-rose-50' }
+                { label: 'Volatility (VIX)', value: 19.25, trend: 'Up 10.4%', icon: Activity, color: 'text-slate-9000', bg: 'bg-rose-800/10' },
+                { label: 'AI Compute Demand', value: '92%', trend: 'New Record', icon: BrainCircuit, color: 'text-emerald-600', bg: 'bg-emerald-600/10' },
+                { label: 'Fed Countdown', value: '12 Days', trend: 'Next: Rate Hold', icon: Target, color: 'text-rose-900', bg: 'bg-rose-900/10' },
+                { label: 'Fear & Greed Index', value: 78, trend: 'Extreme Greed', icon: BarChart2, color: 'text-slate-9000', bg: 'bg-rose-800/10' }
               ].map((stat, i) => (
-                <div key={i} className={`reveal-up bg-white/70 backdrop-blur-lg border p-6 rounded-[32px] shadow-sm hover:shadow-xl transition-all group border-blue-100/50 ${isMarketStressed && stat.label === 'Volatility (VIX)' ? 'border-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.15)]' : ''}`}>
+                <div key={i} className={`reveal-up bg-white backdrop-blur-lg border p-6 rounded-[32px] shadow-sm hover:shadow-xl transition-all group border-slate-200 ${isMarketStressed && stat.label === 'Volatility (VIX)' ? 'border-rose-800/30 shadow-[0_0_15px_rgba(244,63,94,0.15)]' : ''}`}>
                   <div className="flex items-center justify-between mb-4">
                     <div className={`w-10 h-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center`}>
                       <stat.icon size={20} />
                     </div>
-                    <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">{stat.trend}</span>
+                    <span className="text-[10px] font-black text-slate-500 tracking-widest uppercase">{stat.trend}</span>
                   </div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
                   <p className="text-3xl font-black text-slate-900">{stat.value}</p>
                 </div>
               ))}
@@ -443,30 +459,30 @@ export default function App() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
               {recruiterMode ? (
                 <>
-                  <div className="reveal-up p-8 liquid-glass bg-slate-900 text-white border-none col-span-2">
+                  <div className="reveal-up p-8 liquid-glass bg-white text-slate-900 border-none col-span-2">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="font-bold text-sm uppercase tracking-widest flex items-center gap-3">
-                        <Target size={18} className="text-blue-400" /> Talent Flow Tracker
+                        <Target size={18} className="text-rose-900" /> Talent Flow Tracker
                       </h3>
                       <div className="text-[9px] font-mono text-slate-500 uppercase">Live: Q2 2026 Data</div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                      {Object.entries(RECRUITER_DATA.layoffHeatmap).map(([sector, count]) => (
+                      {Object.entries(intelligence.recruiterData.layoffHeatmap).map(([sector, count]) => (
                         <div key={sector}>
                           <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">{sector} Layoffs</p>
                           <p className="text-xl font-black">{count.toLocaleString()}</p>
-                          <div className="h-1 w-full bg-slate-800 rounded-full mt-2">
-                            <div className="h-full bg-rose-500" style={{ width: `${Math.min(count/100, 100)}%` }} />
+                          <div className="h-1 w-full bg-slate-50 rounded-full mt-2">
+                            <div className="h-full bg-rose-800" style={{ width: `${Math.min(count/100, 100)}%` }} />
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="reveal-up p-8 liquid-glass bg-blue-600 text-white border-none">
+                  <div className="reveal-up p-8 liquid-glass bg-rose-900 text-white border-none">
                     <h3 className="font-bold text-sm uppercase tracking-widest mb-6">Top Hiring Hubs</h3>
                     <div className="space-y-3">
-                      {RECRUITER_DATA.topHiringFirms.map((firm, i) => (
-                        <div key={i} className="flex items-center justify-between text-xs font-bold p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-all cursor-pointer">
+                      {intelligence.recruiterData.topHiringFirms.map((firm, i) => (
+                        <div key={i} className="flex items-center justify-between text-xs font-bold p-3 bg-white rounded-xl hover:bg-white transition-all cursor-pointer">
                           <span>{firm}</span>
                           <ChevronRight size={14} className="opacity-40" />
                         </div>
@@ -476,21 +492,21 @@ export default function App() {
                 </>
               ) : (
                 ['Economy', 'Tech', 'Crypto'].map((sector) => {
-                  const isMatch = search && (sector.toLowerCase().includes(search.toLowerCase()) || SECTOR_ANALYSIS[sector].toLowerCase().includes(search.toLowerCase()));
+                  const isMatch = search && (sector.toLowerCase().includes(search.toLowerCase()) || intelligence.sectorAnalysis[sector].toLowerCase().includes(search.toLowerCase()));
                   return (
-                    <div key={sector} className={`reveal-up p-8 liquid-glass transition-all duration-500 ${isMatch ? 'bg-blue-50 border-blue-400 shadow-[0_0_30px_rgba(37,99,235,0.25)] ring-2 ring-blue-400 scale-[1.02]' : 'bg-white/60 border-blue-100/50 opacity-80'}`}>
+                    <div key={sector} className={`reveal-up p-8 liquid-glass transition-all duration-500 ${isMatch ? 'bg-slate-50 border-rose-800/50 shadow-[0_0_30px_rgba(59,130,246,0.15)] ring-1 ring-rose-800/50 scale-[1.02]' : 'bg-white border-slate-200 opacity-80'}`}>
                       <div className="flex items-center gap-3 mb-4">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isMatch ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'}`}>
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isMatch ? 'bg-rose-900 text-white' : 'bg-slate-50 text-rose-900'}`}>
                           {sector === 'Economy' ? <TrendingDown size={18} /> : sector === 'Tech' ? <Sparkles size={18} /> : <TrendingUp size={18} />}
                         </div>
-                        <h3 className="font-bold text-sm text-slate-900 uppercase tracking-widest">{sector} Sector</h3>
+                        <h3 className="font-bold text-sm text-slate-800 uppercase tracking-widest">{sector} Sector</h3>
                       </div>
-                      <p className={`text-xs leading-relaxed italic transition-colors ${isMatch ? 'text-slate-900 font-medium' : 'text-slate-600'}`}>
-                        "{SECTOR_ANALYSIS[sector]}"
+                      <p className={`text-[13px] leading-relaxed transition-colors ${isMatch ? 'text-slate-900 font-bold' : 'text-slate-800 font-medium'}`}>
+                        "{intelligence.sectorAnalysis[sector]}"
                       </p>
-                      <div className="mt-4 pt-4 border-t border-blue-50 flex items-center justify-between">
-                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isMatch ? 'text-blue-600' : 'text-blue-400'}`}>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} Insight</span>
-                        <ChevronRight size={14} className={isMatch ? 'text-blue-600' : 'text-blue-300'} />
+                      <div className="mt-4 pt-4 border-t border-slate-200 flex items-center justify-between">
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isMatch ? 'text-rose-900' : 'text-slate-500'}`}>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} Insight</span>
+                        <ChevronRight size={14} className={isMatch ? 'text-rose-900' : 'text-slate-500'} />
                       </div>
                     </div>
                   );
@@ -500,13 +516,13 @@ export default function App() {
 
             {/* Predictive Simulator Section */}
             {!recruiterMode && view === 'dashboard' && (
-              <div className="reveal-up mb-8 p-8 liquid-glass bg-gradient-to-br from-slate-900 to-blue-900 text-white border-none overflow-hidden relative">
+              <div className="reveal-up mb-8 p-8 liquid-glass bg-gradient-to-br from-white to-rose-50 text-slate-900 border-none overflow-hidden relative">
                 <div className="absolute top-0 right-0 p-10 opacity-10">
                   <BrainCircuit size={120} />
                 </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="px-3 py-1 rounded-full bg-blue-500 text-[9px] font-black uppercase tracking-widest">AI Simulation Engine</div>
+                    <div className="px-3 py-1 rounded-full bg-rose-800 text-[9px] font-black uppercase tracking-widest">AI Simulation Engine</div>
                     <h3 className="text-xl font-black uppercase tracking-tighter">Predictive "What-If" Analysis</h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -515,8 +531,8 @@ export default function App() {
                       { trigger: 'Scenario: Hormuz De-escalation', impact: 'Bearish for Oil / Defensive', probability: '42%' },
                       { trigger: 'Scenario: Sovereign AI Mandate', impact: 'Bullish for Local Infrastructure', probability: '88%' }
                     ].map((sim, i) => (
-                      <div key={i} className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 transition-all cursor-pointer group">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase mb-1">{sim.trigger}</p>
+                      <div key={i} className="p-4 rounded-2xl bg-white hover:bg-white transition-all cursor-pointer group">
+                        <p className="text-[10px] font-bold text-rose-900 uppercase mb-1">{sim.trigger}</p>
                         <p className="text-xs font-black mb-3">{sim.impact}</p>
                         <div className="flex items-center justify-between">
                           <span className="text-[9px] opacity-40 uppercase">Confidence</span>
@@ -538,12 +554,12 @@ export default function App() {
                 /* Dynamic Feed / History Vault Feed */
                 <>
                   {view === 'saved' && (
-                    <div className="col-span-full mb-4 p-6 bg-slate-900 text-white rounded-[32px] flex items-center justify-between">
+                    <div className="col-span-full mb-4 p-6 bg-white text-slate-900 rounded-[32px] flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <Calendar size={24} className="text-blue-400" />
+                        <Calendar size={24} className="text-rose-900" />
                         <div>
                           <h2 className="text-lg font-black uppercase">History Vault: {selectedHistory}</h2>
-                          <p className="text-[10px] text-slate-400 font-bold tracking-widest">ARCHIVED INTELLIGENCE PIPELINE</p>
+                          <p className="text-[10px] text-slate-600 font-bold tracking-widest">ARCHIVED INTELLIGENCE PIPELINE</p>
                         </div>
                       </div>
                       <div className="text-[10px] font-mono opacity-50">State: Read-Only Archive</div>
@@ -554,9 +570,9 @@ export default function App() {
                   ))}
                 </>
               ) : (
-                <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 bg-white/40 backdrop-blur-md rounded-[40px] border border-dashed border-blue-200">
+                <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-500 bg-white backdrop-blur-md rounded-[40px] border border-dashed border-slate-200">
                   <Database size={48} className="mb-4 opacity-20" />
-                  <p className="text-lg font-bold">No narratives found for {selectedHistory}</p>
+                  <p className="text-lg font-bold text-slate-700">No narratives found for {selectedHistory}</p>
                   <p className="text-sm opacity-60">Try selecting a different timeline or running a Live Scrape.</p>
                 </div>
               )}
@@ -567,24 +583,24 @@ export default function App() {
 
       {showLogs && (
         <div className="fixed inset-x-0 bottom-0 z-[9999] p-6 pointer-events-none">
-          <div className="max-w-xl ml-auto bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-6 pointer-events-auto overflow-hidden">
+          <div className="max-w-xl ml-auto bg-white backdrop-blur-xl border border-slate-200 rounded-3xl shadow-2xl p-6 pointer-events-auto overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-blue-400 tracking-[0.3em] uppercase">Engine Trace</span>
+                <div className="w-2 h-2 rounded-full bg-rose-800 animate-pulse" />
+                <span className="text-[10px] font-bold text-rose-900 tracking-[0.3em] uppercase">Engine Trace</span>
               </div>
-              <button onClick={() => setShowLogs(false)} className="text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => setShowLogs(false)} className="text-slate-600 hover:text-slate-900 transition-colors">
                 <X size={16} />
               </button>
             </div>
             <div className="space-y-2 font-mono text-[11px] max-h-48 overflow-y-auto custom-scrollbar pr-2">
               {logs.map((log, i) => (
-                <div key={i} className="text-slate-300 border-l border-white/10 pl-3 py-1 animate-in fade-in slide-in-from-left-2 duration-300">
+                <div key={i} className="text-slate-700 border-l border-slate-200 pl-3 py-1 animate-in fade-in slide-in-from-left-2 duration-300">
                   {log}
                 </div>
               ))}
               {loading && (
-                <div className="flex items-center gap-2 text-blue-400 pl-3 py-1 mt-2">
+                <div className="flex items-center gap-2 text-rose-900 pl-3 py-1 mt-2">
                   <RefreshCw size={10} className="animate-spin" />
                   <span className="animate-pulse tracking-widest text-[9px] font-bold uppercase">Processing live signals...</span>
                 </div>
