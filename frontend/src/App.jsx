@@ -131,8 +131,7 @@ export default function App() {
     refreshInterval: 60000
   });
   const intelligence = intelligenceRaw || {
-    recruiterData: RECRUITER_DATA,
-    sectorAnalysis: SECTOR_ANALYSIS
+        sectorAnalysis: SECTOR_ANALYSIS
   };
   const isValidating = pulseValidating || summariesValidating;
   const fallbackHistory = Array.from({
@@ -196,7 +195,7 @@ export default function App() {
       duration: 0.3,
       onComplete: () => {
         mutateSummaries();
-        console.log(`[RECRUITER MODE]: Swapped state to ${date} data.`);
+        console.log(`[HISTORICAL VAULT]: Swapped state to ${date} data.`);
         gsap.to('.dashboard-content', {
           opacity: 1,
           y: 0,
