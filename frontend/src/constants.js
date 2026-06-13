@@ -114,22 +114,6 @@ export const LIVE_INDICES = [
   { symbol: "CRUDE OIL", value: "$121.90", change: "+4.25%", up: true, volatility: [40, 42, 41, 44, 43, 45, 46] }
 ];
 
-export const RECRUITER_DATA = {
-  talentDemand: [
-    { sector: 'AI Engineering', demand: 'Extreme', hiring: 85, layoffs: 5 },
-    { sector: 'Blockchain', demand: 'High', hiring: 45, layoffs: 12 },
-    { sector: 'Cybersecurity', demand: 'Stable', hiring: 30, layoffs: 2 },
-    { sector: 'Traditional Fin', demand: 'Declining', hiring: 10, layoffs: 45 }
-  ],
-  topHiringFirms: ['SovereignAI India', 'Ethos Labs', 'Nexus compute', 'Bharat Tech'],
-  layoffHeatmap: {
-    Tech: 12500,
-    Finance: 8400,
-    Crypto: 1200,
-    Retail: 4500
-  }
-};
-
 export const SECTOR_ANALYSIS = {
   Economy: "2026 is defined by 'Structural Fragmentation'. Regionalization is the new globalism as trade blocs solidify. High sovereign debt and tight commodity markets (Copper, Lithium) are the primary fiscal risks. Focus on regional energy independence.",
   Tech: "We are moving from AI Hype to 'Operational Productivity'. Investment is shifting from chips (Capex) to user-facing applications (Opex). Sovereign AI clouds are mandatory for national security. Focus on the 'Fat App' thesis.",

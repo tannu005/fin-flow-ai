@@ -12,7 +12,7 @@ const SENTIMENT_STYLES = {
   Neutral: { color: 'var(--sentiment-neutral)', label: 'Neutral' }
 };
 
-const SummaryCard = ({ article, index = 0, recruiterMode = false, meta = {}, isStressed = false }) => {
+const SummaryCard = ({ article, index = 0, meta = {}, isStressed = false }) => {
   if (!article) return null;
   const cardRef = useRef();
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -35,22 +35,7 @@ const SummaryCard = ({ article, index = 0, recruiterMode = false, meta = {}, isS
       className={`bg-white backdrop-blur-lg border rounded-[32px] p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(225,29,72,0.08)] relative overflow-hidden flex flex-col h-full group ${isStressed ? 'border-rose-300 animate-pulse-subtle' : 'border-slate-200'}`}
     >
       {/* ── Recruiter Mode: Technical Badge ── */}
-      {recruiterMode && (
-        <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-1.5 animate-in fade-in slide-in-from-right-4 duration-500">
-           <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white backdrop-blur-md border border-slate-200 text-[9px] font-mono text-white shadow-xl">
-             <Database size={10} className="text-rose-900" /> 
-             <span className="opacity-60">Source:</span> {meta.dataSource || 'AlphaVantage Proxy'}
-           </div>
-           <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white backdrop-blur-md border border-slate-200 text-[9px] font-mono text-white shadow-xl">
-             <Clock size={10} className="text-emerald-400" /> 
-             <span className="opacity-60">Latency:</span> {meta.latency || '32ms'}
-           </div>
-           <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white backdrop-blur-md border border-slate-200 text-[9px] font-mono text-white shadow-xl">
-             <Layers size={10} className="text-slate-9000" /> 
-             <span className="opacity-60">Cache:</span> {meta.cacheStatus || 'HIT from Redis'}
-           </div>
-        </div>
-      )}
+      
 
       {/* ── Sentiment & Category ── */}
       <div className="flex items-center justify-between mb-4">
@@ -114,22 +99,7 @@ const SummaryCard = ({ article, index = 0, recruiterMode = false, meta = {}, isS
       </div>
 
       {/* ── Data Lifecycle (Recruiter Mode) ── */}
-      {recruiterMode && (
-        <div className="mt-4 pt-4 border-t border-dashed border-slate-200 animate-in fade-in slide-in-from-bottom-2 duration-500">
-           <div className="flex items-center justify-between text-[8px] font-bold text-slate-600 tracking-tighter uppercase mb-2">
-             <span>Lifecycle: API</span>
-             <ChevronRight size={10} />
-             <span>Validation</span>
-             <ChevronRight size={10} />
-             <span>DB Storage</span>
-             <ChevronRight size={10} />
-             <span className="text-slate-9000">State</span>
-           </div>
-           <div className="h-1 w-full bg-slate-50 rounded-full overflow-hidden">
-             <div className="h-full bg-rose-800 w-3/4 animate-pulse" />
-           </div>
-        </div>
-      )}
+      
     </div>
   );
 };

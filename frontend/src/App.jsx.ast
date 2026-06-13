@@ -7,7 +7,7 @@ import Background3D from './components/Background3D';
 import SummaryCard from './components/SummaryCard';
 import Heatmap from './components/Heatmap';
 import { useMarketPulse } from './hooks/useMarketPulse';
-import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS } from './constants';
+import { MOCK_ARTICLES, LIVE_INDICES, HISTORICAL_TIMELINE_2026, SECTOR_ANALYSIS, RECRUITER_DATA } from './constants';
 const API_URL = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app') ? '/_backend/api' : import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 const Sparkline = ({
